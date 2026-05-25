@@ -1,0 +1,17 @@
+.DS_Store
+.idea/
+.vscode/
+*.iml
+
+target/
+build/
+dist/
+
+node_modules/
+.next/
+
+.env
+.env.local
+*.log
+
+docker-data/
