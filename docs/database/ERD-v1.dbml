@@ -1,0 +1,449 @@
+Project BrewOps {
+  database_type: "PostgreSQL"
+  Note: "Enterprise Coffee Shop Platform DB Design"
+}
+
+/*
+  =========================
+  ENUMS
+  =========================
+*/
+
+Enum user_status {
+  ACTIVE
+  BLOCKED
+  DELETED
+}
+
+Enum role_type {
+  CUSTOMER
+  STAFF
+  ADMIN
+}
+
+Enum product_status {
+  ACTIVE
+  INACTIVE
+  OUT_OF_STOCK
+  DELETED
+}
+
+Enum order_status {
+  PENDING
+  PAYMENT_PENDING
+  PAID
+  PREPARING
+  READY
+  COMPLETED
+  CANCELLED
+  FAILED
+  REFUNDED
+}
+
+Enum payment_status {
+  INITIATED
+  PENDING
+  SUCCESS
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+Enum payment_provider {
+  STRIPE
+  CASH
+}
+
+Enum inventory_movement_type {
+  STOCK_IN
+  STOCK_OUT
+  RESERVED
+  RELEASED
+  ADJUSTED
+}
+
+/*
+  =========================
+  IDENTITY / RBAC
+  =========================
+*/
+
+Table users {
+  id uuid [pk]
+  full_name varchar(150) [not null]
+  email varchar(180) [not null, unique]
+  password_hash varchar(255) [not null]
+  phone varchar(20)
+  status user_status [not null, default: 'ACTIVE']
+
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  version bigint [not null, default: 0]
+
+  indexes {
+    email [unique, name: "uk_users_email"]
+    status [name: "idx_users_status"]
+  }
+}
+
+Table roles {
+  id uuid [pk]
+  name role_type [not null, unique]
+
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  version bigint [not null, default: 0]
+}
+
+Table user_roles {
+  user_id uuid [not null]
+  role_id uuid [not null]
+
+  created_at timestamp [not null]
+
+  indexes {
+    (user_id, role_id) [pk]
+    role_id [name: "idx_user_roles_role_id"]
+  }
+}
+
+/*
+  =========================
+  CATALOG
+  =========================
+*/
+
+Table categories {
+  id uuid [pk]
+  name varchar(100) [not null]
+  slug varchar(120) [not null, unique]
+  description text
+  display_order int [not null, default: 0]
+  active boolean [not null, default: true]
+
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  version bigint [not null, default: 0]
+
+  indexes {
+    slug [unique, name: "uk_categories_slug"]
+    active [name: "idx_categories_active"]
+  }
+}
+
+Table products {
+  id uuid [pk]
+  category_id uuid [not null]
+
+  name varchar(150) [not null]
+  slug varchar(180) [not null, unique]
+  description text
+  image_url text
+  status product_status [not null, default: 'ACTIVE']
+
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  version bigint [not null, default: 0]
+
+  indexes {
+    category_id [name: "idx_products_category_id"]
+    slug [unique, name: "uk_products_slug"]
+    status [name: "idx_products_status"]
+  }
+}
+
+Table product_variants {
+  id uuid [pk]
+  product_id uuid [not null]
+
+  name varchar(100) [not null] // Small, Medium, Large, Single Shot
+  sku varchar(100) [not null, unique]
+  price decimal(10,2) [not null]
+  currency varchar(3) [not null, default: 'INR']
+  active boolean [not null, default: true]
+
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  version bigint [not null, default: 0]
+
+  indexes {
+    product_id [name: "idx_variants_product_id"]
+    sku [unique, name: "uk_variants_sku"]
+    active [name: "idx_variants_active"]
+  }
+}
+
+/*
+  =========================
+  INVENTORY
+  =========================
+*/
+
+Table inventory {
+  id uuid [pk]
+  variant_id uuid [not null, unique]
+
+  available_quantity int [not null, default: 0]
+  reserved_quantity int [not null, default: 0]
+  low_stock_threshold int [not null, default: 5]
+
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  version bigint [not null, default: 0]
+
+  indexes {
+    variant_id [unique, name: "uk_inventory_variant_id"]
+  }
+}
+
+Table inventory_movements {
+  id uuid [pk]
+  inventory_id uuid [not null]
+  order_id uuid
+  movement_type inventory_movement_type [not null]
+  quantity int [not null]
+  reason varchar(255)
+
+  created_at timestamp [not null]
+
+  indexes {
+    inventory_id [name: "idx_inventory_movements_inventory_id"]
+    order_id [name: "idx_inventory_movements_order_id"]
+    movement_type [name: "idx_inventory_movements_type"]
+  }
+}
+
+/*
+  =========================
+  CART
+  =========================
+*/
+
+Table carts {
+  id uuid [pk]
+  user_id uuid
+  session_id varchar(150)
+  active boolean [not null, default: true]
+
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  version bigint [not null, default: 0]
+
+  indexes {
+    user_id [name: "idx_carts_user_id"]
+    session_id [name: "idx_carts_session_id"]
+    active [name: "idx_carts_active"]
+  }
+}
+
+Table cart_items {
+  id uuid [pk]
+  cart_id uuid [not null]
+  variant_id uuid [not null]
+  quantity int [not null]
+  unit_price decimal(10,2) [not null]
+
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  version bigint [not null, default: 0]
+
+  indexes {
+    cart_id [name: "idx_cart_items_cart_id"]
+    variant_id [name: "idx_cart_items_variant_id"]
+    (cart_id, variant_id) [unique, name: "uk_cart_variant"]
+  }
+}
+
+/*
+  =========================
+  ORDERS
+  =========================
+*/
+
+Table orders {
+  id uuid [pk]
+  user_id uuid
+
+  order_number varchar(40) [not null, unique]
+  status order_status [not null, default: 'PENDING']
+
+  subtotal decimal(10,2) [not null]
+  tax_amount decimal(10,2) [not null, default: 0]
+  discount_amount decimal(10,2) [not null, default: 0]
+  total_amount decimal(10,2) [not null]
+  currency varchar(3) [not null, default: 'INR']
+
+  special_instructions text
+
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  version bigint [not null, default: 0]
+
+  indexes {
+    user_id [name: "idx_orders_user_id"]
+    order_number [unique, name: "uk_orders_order_number"]
+    status [name: "idx_orders_status"]
+    created_at [name: "idx_orders_created_at"]
+  }
+}
+
+Table order_items {
+  id uuid [pk]
+  order_id uuid [not null]
+  variant_id uuid [not null]
+
+  product_name varchar(150) [not null]
+  variant_name varchar(100) [not null]
+  quantity int [not null]
+  unit_price decimal(10,2) [not null]
+  line_total decimal(10,2) [not null]
+
+  created_at timestamp [not null]
+
+  indexes {
+    order_id [name: "idx_order_items_order_id"]
+    variant_id [name: "idx_order_items_variant_id"]
+  }
+}
+
+Table order_status_history {
+  id uuid [pk]
+  order_id uuid [not null]
+  old_status order_status
+  new_status order_status [not null]
+  changed_by_user_id uuid
+  reason varchar(255)
+
+  created_at timestamp [not null]
+
+  indexes {
+    order_id [name: "idx_order_status_history_order_id"]
+    new_status [name: "idx_order_status_history_new_status"]
+  }
+}
+
+/*
+  =========================
+  PAYMENTS
+  =========================
+*/
+
+Table payments {
+  id uuid [pk]
+  order_id uuid [not null, unique]
+
+  provider payment_provider [not null]
+  status payment_status [not null, default: 'INITIATED']
+
+  amount decimal(10,2) [not null]
+  currency varchar(3) [not null, default: 'INR']
+
+  idempotency_key varchar(120) [not null, unique]
+  provider_payment_intent_id varchar(180) [unique]
+  provider_charge_id varchar(180)
+
+  failure_reason text
+
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  version bigint [not null, default: 0]
+
+  indexes {
+    order_id [unique, name: "uk_payments_order_id"]
+    idempotency_key [unique, name: "uk_payments_idempotency_key"]
+    provider_payment_intent_id [unique, name: "uk_provider_payment_intent"]
+    status [name: "idx_payments_status"]
+  }
+}
+
+Table payment_events {
+  id uuid [pk]
+  payment_id uuid
+  provider payment_provider [not null]
+  provider_event_id varchar(180) [not null, unique]
+  event_type varchar(120) [not null]
+  payload jsonb [not null]
+  processed boolean [not null, default: false]
+
+  created_at timestamp [not null]
+  processed_at timestamp
+
+  indexes {
+    payment_id [name: "idx_payment_events_payment_id"]
+    provider_event_id [unique, name: "uk_payment_events_provider_event_id"]
+    processed [name: "idx_payment_events_processed"]
+  }
+}
+
+/*
+  =========================
+  IDEMPOTENCY / AUDIT
+  =========================
+*/
+
+Table idempotency_keys {
+  id uuid [pk]
+  key varchar(150) [not null, unique]
+  request_hash varchar(255) [not null]
+  response_payload jsonb
+  status_code int
+  locked_until timestamp
+
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  indexes {
+    key [unique, name: "uk_idempotency_key"]
+    locked_until [name: "idx_idempotency_locked_until"]
+  }
+}
+
+Table audit_logs {
+  id uuid [pk]
+  actor_user_id uuid
+  action varchar(120) [not null]
+  entity_type varchar(120) [not null]
+  entity_id uuid
+  metadata jsonb
+
+  created_at timestamp [not null]
+
+  indexes {
+    actor_user_id [name: "idx_audit_actor_user_id"]
+    entity_type [name: "idx_audit_entity_type"]
+    entity_id [name: "idx_audit_entity_id"]
+    created_at [name: "idx_audit_created_at"]
+  }
+}
+
+/*
+  =========================
+  RELATIONSHIPS
+  =========================
+*/
+
+Ref: user_roles.user_id > users.id [delete: cascade]
+Ref: user_roles.role_id > roles.id [delete: restrict]
+
+Ref: products.category_id > categories.id [delete: restrict]
+Ref: product_variants.product_id > products.id [delete: cascade]
+
+Ref: inventory.variant_id > product_variants.id [delete: restrict]
+Ref: inventory_movements.inventory_id > inventory.id [delete: restrict]
+Ref: inventory_movements.order_id > orders.id [delete: set null]
+
+Ref: carts.user_id > users.id [delete: set null]
+Ref: cart_items.cart_id > carts.id [delete: cascade]
+Ref: cart_items.variant_id > product_variants.id [delete: restrict]
+
+Ref: orders.user_id > users.id [delete: set null]
+Ref: order_items.order_id > orders.id [delete: cascade]
+Ref: order_items.variant_id > product_variants.id [delete: restrict]
+
+Ref: order_status_history.order_id > orders.id [delete: cascade]
+Ref: order_status_history.changed_by_user_id > users.id [delete: set null]
+
+Ref: payments.order_id > orders.id [delete: restrict]
+Ref: payment_events.payment_id > payments.id [delete: set null]
+
+Ref: audit_logs.actor_user_id > users.id [delete: set null]
