@@ -144,6 +144,8 @@ CREATE TABLE order_items (
     unit_price NUMERIC(10,2) NOT NULL,
     line_total NUMERIC(10,2) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    version BIGINT NOT NULL DEFAULT 0,
     CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     CONSTRAINT fk_order_items_variant FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE RESTRICT,
     CONSTRAINT chk_order_item_quantity_positive CHECK (quantity > 0)
