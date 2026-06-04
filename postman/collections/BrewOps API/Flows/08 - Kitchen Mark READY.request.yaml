@@ -1,0 +1,16 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/kitchen/orders/{{orderId}}/status"
+method: PATCH
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "status": "READY"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+order: 8000

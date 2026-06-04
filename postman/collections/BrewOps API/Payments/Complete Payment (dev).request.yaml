@@ -1,0 +1,5 @@
+$kind: http-request
+description: Requires `spring.profiles.active=dev`. Simulates successful payment without Stripe.
+url: "{{baseUrl}}/api/v1/payments/{{paymentId}}/complete"
+method: POST
+order: 3000

@@ -1,0 +1,21 @@
+$kind: http-request
+description: Use Stripe CLI for real signed payloads. Server requires STRIPE_ENABLED and STRIPE_WEBHOOK_SECRET.
+url: "{{baseUrl}}/api/v1/webhooks/stripe"
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Stripe-Signature
+    value: "{{stripeSignature}}"
+    description: "From Stripe CLI: stripe listen --forward-to localhost:8080/api/v1/webhooks/stripe"
+body:
+  type: text
+  content: |-
+    {
+      "id": "evt_test_webhook",
+      "type": "payment_intent.succeeded",
+      "data": {
+        "object": {}
+      }
+    }
+order: 1000

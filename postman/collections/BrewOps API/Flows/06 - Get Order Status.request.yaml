@@ -1,0 +1,10 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/orders/{{orderId}}/status"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', () => pm.response.to.have.status(200));
+      pm.test('Order PAID', () => pm.expect(pm.response.json().status).to.eql('PAID'));
+    language: text/javascript
+order: 6000

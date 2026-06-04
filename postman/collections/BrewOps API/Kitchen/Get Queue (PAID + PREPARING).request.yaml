@@ -1,0 +1,6 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/kitchen/orders?status=PAID,PREPARING"
+method: GET
+queryParams:
+  status: PAID,PREPARING
+order: 1000

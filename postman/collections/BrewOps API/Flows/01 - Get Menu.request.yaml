@@ -1,0 +1,27 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/menu"
+method: GET
+scripts:
+  - type: beforeRequest
+    code: |-
+      pm.environment.set('sessionId', pm.environment.get('sessionId') || ('guest-' + Date.now()));
+      pm.environment.set('idempotencyKey', 'pay-' + pm.variables.replaceIn('{{$guid}}'));
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', () => pm.response.to.have.status(200));
+      const menu = pm.response.json();
+      let variantId = null;
+      for (const cat of menu) {
+        for (const p of cat.products || []) {
+          for (const v of p.variants || []) {
+            if (v.availableQuantity > 0) { variantId = v.variantId; break; }
+          }
+          if (variantId) break;
+        }
+        if (variantId) break;
+      }
+      if (variantId) pm.environment.set('variantId', variantId);
+      else console.warn('No variant with stock found in menu');
+    language: text/javascript
+order: 1000

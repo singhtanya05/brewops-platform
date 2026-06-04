@@ -1,0 +1,24 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/auth/register"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "fullName": "Test User",
+      "email": "test.user.{{$timestamp}}@brewops.local",
+      "password": "password123",
+      "phone": "+919999999999"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      if (pm.response.code === 200) {
+        const body = pm.response.json();
+        pm.environment.set('token', body.token);
+        pm.environment.set('userId', body.userId);
+      }
+    language: text/javascript
+order: 1000

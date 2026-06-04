@@ -1,0 +1,13 @@
+$kind: http-request
+description: Requires `spring.profiles.active=dev`. Releases reserved inventory.
+url: "{{baseUrl}}/api/v1/payments/{{paymentId}}/fail"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "reason": "Card declined (test)"
+    }
+order: 4000

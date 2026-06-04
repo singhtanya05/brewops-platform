@@ -1,0 +1,20 @@
+$kind: collection
+description: |-
+  Full BrewOps backend API collection.
+
+  **Setup**
+  1. Import `BrewOps-Local.postman_environment.json` and select **BrewOps Local**.
+  2. Start Postgres (Docker) and run the app with profile `dev` (`spring.profiles.active=dev`) so payment complete/fail endpoints are available.
+  3. Run **Flows → Happy Path (Guest Checkout)** in order, or use individual folders.
+
+  **Auth**
+  - Guest cart/order/payment: no token.
+  - Kitchen: JWT with `STAFF` or `ADMIN` role.
+  - Admin inventory & refund: JWT with `ADMIN` role.
+  - After login, `token` is saved automatically.
+
+  **Stripe**
+  - Set env `STRIPE_ENABLED=true` on the server and use real PaymentIntent flow; webhook via Stripe CLI to `POST /api/v1/webhooks/stripe`.
+  - For local MVP without Stripe, use **Payments → Complete Payment (dev)**.
+variables:
+  baseUrl: http://localhost:8080

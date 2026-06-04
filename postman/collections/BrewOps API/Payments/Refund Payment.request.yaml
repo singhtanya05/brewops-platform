@@ -1,0 +1,17 @@
+$kind: http-request
+description: Requires ADMIN role JWT.
+url: "{{baseUrl}}/api/v1/payments/{{paymentId}}/refund"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "reason": "Customer requested refund"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{token}}"
+order: 5000

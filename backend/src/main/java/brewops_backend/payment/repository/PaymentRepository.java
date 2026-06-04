@@ -1,0 +1,18 @@
+package brewops_backend.payment.repository;
+
+import brewops_backend.payment.entity.Payment;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+import java.util.UUID;
+
+public interface PaymentRepository extends JpaRepository<Payment, UUID> {
+
+    Optional<Payment> findByIdempotencyKey(String idempotencyKey);
+
+    Optional<Payment> findByProviderPaymentIntentId(String providerPaymentIntentId);
+
+    Optional<Payment> findByOrder_Id(UUID orderId);
+
+    boolean existsByOrder_Id(UUID orderId);
+}

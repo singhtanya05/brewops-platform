@@ -1,0 +1,24 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+  flyway:
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  task:
+    scheduling:
+      enabled: false
+
+brewops:
+  stripe:
+    enabled: false
+  payment:
+    timeout-minutes: 30
+    timeout-check-interval-ms: 3600000
+
+logging:
+  level:
+    org.hibernate.SQL: warn

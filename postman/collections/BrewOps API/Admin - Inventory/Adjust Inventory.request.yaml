@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/admin/inventory/variants/{{variantId}}/adjust"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "quantityDelta": 10,
+      "reason": "Manual restock"
+    }
+order: 2000

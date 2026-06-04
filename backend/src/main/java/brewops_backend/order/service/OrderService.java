@@ -1,8 +1,9 @@
 package brewops_backend.order.service;
 
-import brewops_backend.inventory.entity.Inventory;
-import brewops_backend.inventory.repository.InventoryRepository;
+import brewops_backend.inventory.service.InventoryService;
 import brewops_backend.order.dto.CreateOrderRequest;
+import brewops_backend.order.dto.OrderDetailResponse;
+import brewops_backend.order.dto.OrderItemDetailResponse;
 import brewops_backend.order.dto.OrderResponse;
 import brewops_backend.order.entity.Cart;
 import brewops_backend.order.entity.CartItem;
@@ -18,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +28,7 @@ public class OrderService {
 
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
-    private final InventoryRepository inventoryRepository;
+    private final InventoryService inventoryService;
 
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request) {
@@ -45,17 +48,6 @@ public class OrderService {
         BigDecimal subtotal = BigDecimal.ZERO;
 
         for (CartItem cartItem : cart.getItems()) {
-
-            Inventory inventory = inventoryRepository.findWithLockByVariantId(cartItem.getVariant().getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Inventory not found"));
-
-            if (inventory.getAvailableQuantity() < cartItem.getQuantity()) {
-                throw new IllegalArgumentException("Insufficient inventory for " + cartItem.getVariant().getSku());
-            }
-
-            inventory.setAvailableQuantity(inventory.getAvailableQuantity() - cartItem.getQuantity());
-            inventory.setReservedQuantity(inventory.getReservedQuantity() + cartItem.getQuantity());
-
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order);
             orderItem.setVariant(cartItem.getVariant());
@@ -68,7 +60,6 @@ public class OrderService {
                     .multiply(BigDecimal.valueOf(cartItem.getQuantity()));
 
             orderItem.setLineTotal(lineTotal);
-
             order.getItems().add(orderItem);
             subtotal = subtotal.add(lineTotal);
         }
@@ -77,6 +68,8 @@ public class OrderService {
         order.setTaxAmount(BigDecimal.ZERO);
         order.setDiscountAmount(BigDecimal.ZERO);
         order.setTotalAmount(subtotal);
+
+        inventoryService.reserveForOrder(order);
 
         cart.setActive(false);
 
@@ -87,6 +80,49 @@ public class OrderService {
                 savedOrder.getOrderNumber(),
                 savedOrder.getStatus().name(),
                 savedOrder.getTotalAmount()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public OrderDetailResponse getOrder(UUID orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+
+        List<OrderItemDetailResponse> items = order.getItems().stream()
+                .map(item -> new OrderItemDetailResponse(
+                        item.getId(),
+                        item.getVariant().getId(),
+                        item.getProductName(),
+                        item.getVariantName(),
+                        item.getQuantity(),
+                        item.getUnitPrice(),
+                        item.getLineTotal()
+                ))
+                .toList();
+
+        return new OrderDetailResponse(
+                order.getId(),
+                order.getOrderNumber(),
+                order.getStatus().name(),
+                order.getSubtotal(),
+                order.getTaxAmount(),
+                order.getDiscountAmount(),
+                order.getTotalAmount(),
+                order.getCurrency(),
+                items
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public OrderResponse getOrderStatus(UUID orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+
+        return new OrderResponse(
+                order.getId(),
+                order.getOrderNumber(),
+                order.getStatus().name(),
+                order.getTotalAmount()
         );
     }
 

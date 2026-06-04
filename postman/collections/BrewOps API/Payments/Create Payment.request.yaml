@@ -1,0 +1,26 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/payments"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "orderId": "{{orderId}}",
+      "idempotencyKey": "{{idempotencyKey}}"
+    }
+scripts:
+  - type: beforeRequest
+    code: |-
+      if (!pm.environment.get('idempotencyKey')) {
+        pm.environment.set('idempotencyKey', 'pay-' + pm.variables.replaceIn('{{$guid}}'));
+      }
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      if (pm.response.code === 200) {
+        pm.environment.set('paymentId', pm.response.json().paymentId);
+      }
+    language: text/javascript
+order: 1000

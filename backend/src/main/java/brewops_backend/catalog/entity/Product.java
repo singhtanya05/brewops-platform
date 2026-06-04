@@ -4,6 +4,8 @@ import brewops_backend.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +33,8 @@ public class Product extends BaseEntity {
     private String imageUrl;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(nullable = false, columnDefinition = "product_status")
     private ProductStatus status = ProductStatus.ACTIVE;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)

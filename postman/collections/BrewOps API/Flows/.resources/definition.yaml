@@ -1,0 +1,3 @@
+$kind: collection
+description: Run these requests top-to-bottom for an end-to-end guest checkout and kitchen flow.
+order: 1000

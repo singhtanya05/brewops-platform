@@ -1,0 +1,17 @@
+# Use this workspace to collaborate
+workspace:
+  id: 3eddd205-4a08-4159-8bb7-cfd1a5929ddc
+
+localResources:
+  collections:
+    - ../backend/postman/BrewOps-API.postman_collection.json
+  environments:
+    - ../backend/postman/BrewOps-Local.postman_environment.json
+  docs:
+    - ../backend/postman/README.md
+    - ../backend/HELP.md
+    - ../README.md
+
+cloudResources:
+  collections:
+    ../postman/collections/BrewOps API: 936af3f1-d623-424f-93c2-71c65a5cd8ff

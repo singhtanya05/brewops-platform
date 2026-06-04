@@ -1,6 +1,8 @@
 spring:
   application:
     name: brewops-backend
+  profiles:
+    active: dev
 
   datasource:
     url: jdbc:postgresql://localhost:5432/brewops
@@ -36,3 +38,15 @@ management:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+
+brewops:
+  jwt:
+    secret: ${JWT_SECRET:brewops-dev-secret-key-min-32-chars-long}
+    expiration-ms: 86400000
+  stripe:
+    enabled: ${STRIPE_ENABLED:false}
+    api-key: ${STRIPE_API_KEY:}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+  payment:
+    timeout-minutes: 30
+    timeout-check-interval-ms: 60000
