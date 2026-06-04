@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caffeine - BrewOps Console</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div class="app-frame">
+        
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-section">
+                <button class="btn-clay" id="sidebarToggle" onclick="app.toggleSidebar()" style="padding: 6px 12px; margin-right: 8px; font-size: 18px;">☰</button>
+                <span class="logo-icon">☕</span>
+                <span class="logo-text">CAFFEINE</span>
+            </div>
+            
+            <div class="search-section">
+                <input type="text" class="search-input" id="searchBar" placeholder="Search drinks, suppliers, or orders...">
+            </div>
+            
+            <div class="user-profile" id="userProfileSection">
+                <!-- Store Hours Status Badge -->
+                <span class="status-pill" id="storeStatusBadge" style="background-color: var(--accent-matcha); margin-right: 8px;">🟢 OPEN NOW</span>
+                
+                <!-- Cart Toggle Button -->
+                <button class="btn-clay" id="cartToggleBtn" onclick="app.toggleRightDrawer()" style="padding: 8px 14px; position: relative; margin-right: 8px;">
+                    🛒 <span id="cartBadge" class="hidden" style="position: absolute; top: -6px; right: -6px; background-color: var(--color-danger); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; font-weight: bold; display: flex; justify-content: center; align-items: center; border: 1.5px solid white;">0</span>
+                </button>
+                
+                <!-- Anonymous / Guest View -->
+                <span class="status-pill" id="userRoleBadge">GUEST</span>
+                <button class="btn-clay btn-primary" id="loginHeaderBtn" onclick="app.showLogin()">Login</button>
+                
+                <!-- Authenticated View (Hidden by default) -->
+                <div class="profile-avatar hidden" id="userAvatar">A</div>
+                <button class="btn-clay hidden" id="logoutBtn" onclick="app.logout()">Logout</button>
+            </div>
+        </header>
+        
+        <!-- Main Application Workspace -->
+        <div class="workspace">
+            
+            <!-- Left Sidebar (Panel A) -->
+            <aside class="sidebar">
+                <nav class="nav-group" id="navigationGroup">
+                    <a class="nav-item active" id="navStore" onclick="app.switchView('store')">
+                        <span class="nav-item-icon">🏠</span>
+                        <span>Storefront</span>
+                    </a>
+                    <a class="nav-item hidden" id="navKitchen" onclick="app.switchView('kitchen')">
+                        <span class="nav-item-icon">🍳</span>
+                        <span>Kitchen Queue</span>
+                    </a>
+                    <a class="nav-item hidden" id="navSuppliers" onclick="app.switchView('suppliers')">
+                        <span class="nav-item-icon">🚚</span>
+                        <span>Suppliers & POs</span>
+                    </a>
+                    <a class="nav-item hidden" id="navInventory" onclick="app.switchView('inventory')">
+                        <span class="nav-item-icon">📦</span>
+                        <span>Inventory Control</span>
+                    </a>
+                </nav>
+                
+                <!-- Ceramic Pot Mascot -->
+                <div class="sidebar-mascot" id="mascotWrapper" style="position: relative; margin-top: auto; padding-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;">
+                    <!-- Speech bubble -->
+                    <div class="mascot-bubble hidden" id="mascotBubble">
+                        Hello! ☕
+                    </div>
+                    <div class="mascot-icon" id="mascotIcon" style="font-size: 54px; filter: drop-shadow(4px 4px 6px rgba(0,0,0,0.12)); user-select: none; transition: transform 0.15s ease;">🏺</div>
+                    <div style="font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--text-secondary);">CAFFEINE</div>
+                </div>
+                
+                <div class="brand-footer" style="text-align: center; font-size: 11px; color: var(--text-secondary); margin-top: 20px;">
+                    BrewOps Platform &copy; 2026
+                </div>
+            </aside>
+            
+            <!-- Central Panel (Panel B) -->
+            <main class="main-content">
+                
+                <!-- AUTH VIEW (Login/Register Card) -->
+                <section id="viewAuth" class="hidden" style="max-width: 400px; margin: 40px auto;">
+                    <div class="clay-card">
+                        <h2 class="title-large" id="authTitle">Staff / Admin Login</h2>
+                        <form id="authForm" onsubmit="app.handleAuthSubmit(event)">
+                            <div class="form-group">
+                                <label class="form-label" for="authEmail">Email Address</label>
+                                <input type="email" id="authEmail" class="form-input" required placeholder="admin@brewops.local">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="authPassword">Password</label>
+                                <input type="password" id="authPassword" class="form-input" required placeholder="password123">
+                            </div>
+                            <button type="submit" class="btn-clay btn-primary" style="width: 100%; margin-top: 10px;">Authenticate</button>
+                        </form>
+                    </div>
+                </section>
+                
+                <!-- STOREFRONT VIEW -->
+                <section id="viewStore">
+                    <!-- Offline Mode Banner Indicator -->
+                    <div id="offlineDemoBanner" class="hidden" style="background: var(--color-warning); color: var(--text-primary); padding: 8px 16px; border-radius: 12px; margin-bottom: 20px; font-size: 12px; font-weight: 600; text-align: center; border: 1.5px solid white; box-shadow: var(--shadow-clay-button);">
+                        ⚠️ Running in Solo Offline Demo Mode. Data is simulated locally.
+                    </div>
+
+                    <!-- Premium Glassmorphic Hero Section -->
+                    <div class="clay-card premium-hero" style="background: linear-gradient(135deg, var(--accent-coffee), #2E2219); border-radius: var(--border-radius-large); padding: 30px; margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between; gap: 20px; color: white; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 16px 32px rgba(0,0,0,0.25);">
+                        <div style="flex: 1.5;">
+                            <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+                                <span class="status-pill" style="background-color: var(--accent-orange); font-size: 10px; padding: 2px 8px;">🌱 SINGLE-ORIGIN</span>
+                                <span class="status-pill" style="background-color: var(--accent-matcha); font-size: 10px; padding: 2px 8px;">⚡ 3-MIN PREP</span>
+                                <span class="status-pill" style="background-color: #6A8EAD; font-size: 10px; padding: 2px 8px;">🛡️ SECURE PAY</span>
+                            </div>
+                            <h1 style="font-family: 'Outfit', sans-serif; font-size: 32px; font-weight: 700; line-height: 1.25; margin-bottom: 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">Fuel Your Day, Handcrafted Fresh.</h1>
+                            <p style="color: #E2DDD5; font-size: 13px; margin-bottom: 18px; line-height: 1.5;">Directly sourced organic beans, curated barista signatures, and real-time kitchen tracking right to your hands.</p>
+                            <button class="btn-clay btn-matcha" onclick="document.getElementById('catalogHeader').scrollIntoView({ behavior: 'smooth' })" style="padding: 10px 20px; font-size: 13px; text-shadow: none;">Order Brews Now</button>
+                        </div>
+                        <div class="hero-graphic" style="flex: 0.8; display: flex; justify-content: center; align-items: center; position: relative;">
+                            <div class="hero-circle-ambient" style="position: absolute; width: 180px; height: 180px; background: radial-gradient(circle, rgba(239,168,80,0.25) 0%, rgba(255,255,255,0) 70%); filter: blur(10px); z-index: 1;"></div>
+                            <img src="img/coffee.png" style="width: 190px; height: 190px; object-fit: contain; z-index: 2; filter: drop-shadow(0 12px 24px rgba(0,0,0,0.45)); transform: rotate(-5deg); animation: float-cup 4s ease-in-out infinite; margin-top: -30px; margin-bottom: -30px; margin-right: -20px; pointer-events: none;" />
+                        </div>
+                    </div>
+
+                    <!-- Menu List Section -->
+                    <h2 class="title-large" id="catalogHeader" style="margin-top: 10px;">Handcrafted Drink Menu</h2>
+                    
+                    <!-- Category Tabs -->
+                    <div class="category-tabs" id="categoryTabs" style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
+                        <button class="btn-clay btn-primary active-tab" onclick="app.filterMenu('all', this)" id="tabAll">All Drinks</button>
+                    </div>
+
+                    <div class="menu-grid" id="menuGrid">
+                        <!-- Filled dynamically by app.js -->
+                        <div class="clay-card" style="text-align: center;">Loading menu...</div>
+                    </div>
+
+                    <!-- Customer Review / Testimonial Badges -->
+                    <h3 class="title-large" style="margin-top: 40px; margin-bottom: 16px;">What Our Customers Say</h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 40px;">
+                        <div class="clay-card" style="padding: 18px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="font-weight: 700; font-size: 13px;">Liam H.</span>
+                                <span style="color: var(--accent-orange);">⭐⭐⭐⭐⭐</span>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">"The Signature Latte is absolutely smooth. I ordered from my phone and could watch the real-time tracker show exactly when the barista finished. Amazing UX!"</p>
+                        </div>
+                        <div class="clay-card" style="padding: 18px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="font-weight: 700; font-size: 13px;">Sophia R.</span>
+                                <span style="color: var(--accent-orange);">⭐⭐⭐⭐⭐</span>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">"Best iced cold brews in town! Plus the interface feels so clicky and premium. It makes ordering my morning coffee a pleasant daily routine."</p>
+                        </div>
+                    </div>
+
+                    <!-- Footer Section -->
+                    <footer style="border-top: 2px dashed #E6E1D8; padding: 30px 0 10px; display: flex; justify-content: space-between; align-items: center; color: var(--text-secondary); font-size: 12px;">
+                        <div>
+                            <strong>📍 Caffeine Downtown</strong><br>
+                            100 Brew Street, Open Daily: 7 AM - 8 PM
+                        </div>
+                        <div style="text-align: right;">
+                            Handcrafted with care by BrewOps Platform<br>
+                            Support: support@caffeine.local
+                        </div>
+                    </footer>
+                </section>
+                
+                <!-- KITCHEN VIEW -->
+                <section id="viewKitchen" class="hidden">
+                    <h2 class="title-large">Kitchen Live Prep Queue</h2>
+                    <div class="kanban-board">
+                        
+                        <!-- PAID / PENDING PREP -->
+                        <div class="kanban-column">
+                            <h3 class="kanban-column-title">Queue (Paid)</h3>
+                            <div id="kitchenQueuePaid" style="display: flex; flex-direction: column; gap: 12px;">
+                                <!-- Active orders to prepare -->
+                            </div>
+                        </div>
+                        
+                        <!-- PREPARING -->
+                        <div class="kanban-column">
+                            <h3 class="kanban-column-title">Preparing</h3>
+                            <div id="kitchenQueuePrep" style="display: flex; flex-direction: column; gap: 12px;">
+                                <!-- Active orders brewing -->
+                            </div>
+                        </div>
+                        
+                        <!-- READY FOR PICKUP -->
+                        <div class="kanban-column">
+                            <h3 class="kanban-column-title">Ready</h3>
+                            <div id="kitchenQueueReady" style="display: flex; flex-direction: column; gap: 12px;">
+                                <!-- Orders ready to hand over -->
+                            </div>
+                        </div>
+                        
+                    </div>
+                </section>
+                
+                <!-- ADMIN: SUPPLIERS & PO VIEW -->
+                <section id="viewSuppliers" class="hidden">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 class="title-large" style="margin: 0;">Supplier Purchase Orders</h2>
+                        <button class="btn-clay btn-primary" onclick="app.openNewPOModal()">Create New PO</button>
+                    </div>
+                    
+                    <div class="clay-table-wrapper">
+                        <table class="clay-table">
+                            <thead>
+                                <tr>
+                                    <th>PO Number</th>
+                                    <th>Supplier Name</th>
+                                    <th>Total Cost</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="poTableBody">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
+                <!-- ADMIN: INVENTORY CONTROL VIEW -->
+                <section id="viewInventory" class="hidden">
+                    <h2 class="title-large">Inventory Stock Control</h2>
+                    <div class="clay-table-wrapper">
+                        <table class="clay-table">
+                            <thead>
+                                <tr>
+                                    <th>Product Variant</th>
+                                    <th>SKU</th>
+                                    <th>Available Stock</th>
+                                    <th>Safety Threshold</th>
+                                    <th>Update Threshold</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryTableBody">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
+            </main>
+            
+            <!-- Right Drawer (Panel C) -->
+            <aside class="right-drawer" id="rightDrawer">
+                
+                <!-- Close Button for Drawer -->
+                <div style="display: flex; justify-content: flex-end; margin-bottom: -10px;">
+                    <button class="btn-clay" onclick="app.toggleRightDrawer(false)" style="padding: 4px 8px; font-size: 12px; font-weight: bold;">✕ Close</button>
+                </div>
+                
+                <!-- GUEST: SHOPPING CART DRAW EMENT -->
+                <div id="drawerCart" class="clay-card">
+                    <h3 class="cart-title">Your Order Cart</h3>
+                    <div class="cart-items-list" id="cartItemsContainer">
+                        <div style="text-align: center; color: var(--text-secondary); padding: 20px 0;">Cart is empty. Add a drink to start!</div>
+                    </div>
+                    <div style="border-top: 2px solid #E6E1D8; padding-top: 14px; margin-top: 10px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-weight: 700;">
+                            <span>Total Amount:</span>
+                            <span id="cartTotalVal">$0.00</span>
+                        </div>
+                        <button class="btn-clay btn-matcha" id="checkoutBtn" style="width: 100%;" onclick="app.openPaymentModal()">Proceed to Checkout</button>
+                    </div>
+                </div>
+                
+                <!-- CUSTOMER: ORDER TIMELINE TRACKER -->
+                <div id="drawerTracker" class="clay-card hidden">
+                    <h3 class="cart-title" id="trackerOrderNum">Order Tracking #---</h3>
+                    <div class="timeline" id="orderTimeline">
+                        <div class="timeline-node" id="nodePaid">
+                            <div class="timeline-title">Order Paid</div>
+                            <div class="timeline-desc">Payment confirmed, waiting for barista.</div>
+                        </div>
+                        <div class="timeline-node" id="nodePreparing">
+                            <div class="timeline-title">Barista Brewing</div>
+                            <div class="timeline-desc">Extraction and frothing phase in progress.</div>
+                        </div>
+                        <div class="timeline-node" id="nodeReady">
+                            <div class="timeline-title">Ready for Pickup</div>
+                            <div class="timeline-desc">Fresh brew at the counter. Enjoy!</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Order Receipt Panel -->
+                    <div id="trackerReceipt" class="tracker-receipt hidden">
+                        <h4 style="font-weight: 700; color: var(--text-primary); margin-bottom: 12px; font-family: 'Outfit', sans-serif;">Order Receipt</h4>
+                        <div id="receiptItems" style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;">
+                            <!-- Populated with items on completion -->
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-weight:700; color:var(--text-primary); font-size: 14px; border-top: 1px solid #E6E1D8; padding-top: 12px;">
+                            <span>Total Paid:</span>
+                            <span id="receiptTotal">$0.00</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-clay" style="width: 100%; margin-top: 20px;" onclick="app.resetStoreView()">Order Something Else</button>
+                </div>
+                
+                <!-- ADMIN: CREATE SUPPLIER FORM DRAWER -->
+                <div id="drawerAdminForms" class="clay-card hidden">
+                    <h3 class="cart-title" id="adminFormTitle">Create Supplier</h3>
+                    <form id="supplierForm" onsubmit="app.handleCreateSupplier(event)" style="margin-top: 12px;">
+                        <div class="form-group">
+                            <label class="form-label" for="supplierName">Supplier Name</label>
+                            <input type="text" id="supplierName" class="form-input" required placeholder="Bean Brothers LLC">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="supplierContact">Contact Name</label>
+                            <input type="text" id="supplierContact" class="form-input" required placeholder="John Doe">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="supplierEmail">Email Address</label>
+                            <input type="email" id="supplierEmail" class="form-input" required placeholder="orders@beanbros.local">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="supplierPhone">Phone Number</label>
+                            <input type="text" id="supplierPhone" class="form-input" required placeholder="+919999999999">
+                        </div>
+                        <button type="submit" class="btn-clay btn-primary" style="width: 100%;">Save Supplier</button>
+                    </form>
+                    
+                    <!-- Alert Panel -->
+                    <div id="lowStockAlertSection" style="margin-top: 20px; border-top: 2px solid #E6E1D8; padding-top: 14px;">
+                        <h4 style="font-size: 14px; margin-bottom: 10px;">Alarms & Stock Warnings</h4>
+                        <div id="lowStockAlertsContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                            <!-- Populated with items under safety thresholds -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ADMIN: NEW PO DRAWER FORM -->
+                <div id="drawerCreatePO" class="clay-card hidden">
+                    <h3 class="cart-title">Draft Purchase Order</h3>
+                    <form id="poForm" onsubmit="app.handleCreatePO(event)" style="margin-top: 12px;">
+                        <div class="form-group">
+                            <label class="form-label" for="poSupplierSelect">Select Supplier</label>
+                            <select id="poSupplierSelect" class="form-input" style="background-color: var(--bg-primary); border:none;" required>
+                                <!-- Loaded dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="poItemVariant">Select Ingredient / Variant</label>
+                            <select id="poItemVariant" class="form-input" style="background-color: var(--bg-primary); border:none;" required>
+                                <!-- Loaded dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="poItemQty">Order Quantity</label>
+                            <input type="number" id="poItemQty" class="form-input" required value="50" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="poItemCost">Unit Cost ($)</label>
+                            <input type="number" step="0.01" id="poItemCost" class="form-input" required value="10.00" min="0.01">
+                        </div>
+                        <button type="submit" class="btn-clay btn-primary" style="width: 100%;">Create Purchase Order</button>
+                    </form>
+                </div>
+                
+            </aside>
+            
+            <!-- Floating Analytics HUD Panel (Bottom Center) -->
+            <div class="floating-hud" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(12px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.6); padding: 8px 20px; display: flex; gap: 20px; font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 700; color: var(--text-primary); box-shadow: 0 8px 32px rgba(0,0,0,0.12); z-index: 1000; pointer-events: none;">
+                <div>SEY CUSTOMER: <span style="color: var(--accent-matcha-dark);">$19.7K</span> <span style="font-size:8px; color: var(--accent-matcha-dark);">▲ 10%</span></div>
+                <div style="border-left: 2px solid rgba(74, 55, 40, 0.15); padding-left: 20px;">FATS: <span style="color: var(--accent-matcha-dark);">1,238</span> <span style="font-size:8px; color: var(--accent-matcha-dark);">▲ 10%</span></div>
+                <div style="border-left: 2px solid rgba(74, 55, 40, 0.15); padding-left: 20px;">NEW REFNANTS: <span style="color: var(--accent-matcha-dark);">255</span> <span style="font-size:8px; color: var(--accent-matcha-dark);">▲ 10%</span></div>
+                <div style="border-left: 2px solid rgba(74, 55, 40, 0.15); padding-left: 20px;">NEW BRIDES: <span style="color: var(--accent-matcha-dark);">$4.24</span> <span style="font-size:8px; color: var(--accent-matcha-dark);">▲ 10%</span></div>
+            </div>
+            
+        </div>
+        
+    </div>
+
+    <!-- Customization Modal Overlay -->
+    <div class="modal-overlay hidden" id="customizationModal">
+        <div class="clay-card modal-content" style="max-width: 420px; width: 90%; padding: 24px; position: relative;">
+            <button class="modal-close-btn" onclick="app.closeCustomizationModal()">&times;</button>
+            <h3 class="title-large" id="modalDrinkName" style="margin-bottom: 8px;">Customize Drink</h3>
+            <p id="modalDrinkDesc" style="font-size: 12px; color: var(--text-secondary); margin-bottom: 20px;"></p>
+            
+            <form id="customizationForm" onsubmit="app.confirmCustomization(event)">
+                <input type="hidden" id="modalVariantId">
+                <input type="hidden" id="modalBasePrice">
+                
+                <!-- Milk Selection -->
+                <div class="form-group">
+                    <label class="form-label">Milk Selection</label>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                        <label class="custom-radio-label">
+                            <input type="radio" name="milkOption" value="Whole" checked onchange="app.updateModalPrice()"> Whole Milk
+                        </label>
+                        <label class="custom-radio-label">
+                            <input type="radio" name="milkOption" value="Oat" onchange="app.updateModalPrice()"> Oat Milk (+$0.50)
+                        </label>
+                        <label class="custom-radio-label">
+                            <input type="radio" name="milkOption" value="Almond" onchange="app.updateModalPrice()"> Almond (+$0.50)
+                        </label>
+                        <label class="custom-radio-label">
+                            <input type="radio" name="milkOption" value="Soy" onchange="app.updateModalPrice()"> Soy Milk (+$0.50)
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Sweetness Level -->
+                <div class="form-group">
+                    <label class="form-label">Sweetness Level</label>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                        <label class="custom-radio-label">
+                            <input type="radio" name="sweetnessOption" value="100%" checked> 100% Sweet
+                        </label>
+                        <label class="custom-radio-label">
+                            <input type="radio" name="sweetnessOption" value="70%"> 70% Sweet
+                        </label>
+                        <label class="custom-radio-label">
+                            <input type="radio" name="sweetnessOption" value="50%"> 50% Sweet
+                        </label>
+                        <label class="custom-radio-label">
+                            <input type="radio" name="sweetnessOption" value="None"> No Sweetness
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Temperature -->
+                <div class="form-group">
+                    <label class="form-label">Temperature</label>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                        <label class="custom-radio-label">
+                            <input type="radio" name="tempOption" value="Hot" checked> Hot
+                        </label>
+                        <label class="custom-radio-label">
+                            <input type="radio" name="tempOption" value="Iced"> Iced
+                        </label>
+                    </div>
+                </div>
+                
+                <div style="border-top: 2px dashed #E6E1D8; padding-top: 16px; margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="font-size: 13px; color: var(--text-secondary);">Total Price:</span>
+                        <div id="modalTotalPrice" style="font-size: 20px; font-weight: 700; color: var(--accent-coffee);">$0.00</div>
+                    </div>
+                    <button type="submit" class="btn-clay btn-primary">Add to Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+ 
+    <!-- Payment Overlay Modal -->
+    <div class="payment-backdrop" id="paymentBackdrop" onclick="app.closePaymentModal()"></div>
+    <div class="payment-modal" id="paymentModal">
+        <h2 class="title-large" style="margin-bottom: 8px;">Complete Payment</h2>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">Review your order total and confirm payment.</p>
+        
+        <div style="background: var(--bg-primary); padding: 16px; border-radius: var(--border-radius-medium); margin-bottom: 24px; box-shadow: var(--shadow-clay-input); display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 600;">Total Amount</span>
+            <span id="paymentModalTotal" style="font-size: 24px; font-weight: 700; color: var(--accent-coffee);">$0.00</span>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <button class="btn-clay btn-primary" id="btnPayCard" onclick="app.processPayment(this)" style="width: 100%; padding: 14px; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                💳 Pay with Card
+            </button>
+            <button class="btn-clay" id="btnPayApple" onclick="app.processPayment(this)" style="width: 100%; padding: 14px; font-size: 15px; background-color: #000; color: #fff; display: flex; justify-content: center; align-items: center; gap: 8px; box-shadow: none;">
+                 Apple Pay
+            </button>
+            <button class="btn-clay" onclick="app.closePaymentModal()" style="width: 100%; margin-top: 8px;">Cancel</button>
+        </div>
+    </div>
+    <div class="backdrop hidden" id="sidebarBackdrop" onclick="app.toggleSidebar(false)"></div>
+    <div class="backdrop hidden" id="drawerBackdrop" onclick="app.toggleRightDrawer(false)"></div>
+
+    <!-- Script Entrypoint -->
+    <script src="js/app.js"></script>
+</body>
+</html>

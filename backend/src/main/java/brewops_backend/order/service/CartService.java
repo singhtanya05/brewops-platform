@@ -80,6 +80,49 @@ public class CartService {
         return getCart(request.sessionId());
     }
 
+    @Transactional
+    public CartResponse updateItem(UUID itemId, String sessionId, int quantity) {
+        Cart cart = cartRepository.findBySessionIdAndActiveTrue(sessionId)
+                .orElseThrow(() -> new IllegalArgumentException("Cart not found"));
+
+        CartItem cartItem = cartItemRepository.findById(itemId)
+                .orElseThrow(() -> new IllegalArgumentException("Cart item not found"));
+
+        if (!cartItem.getCart().getId().equals(cart.getId())) {
+            throw new IllegalArgumentException("Cart item does not belong to this cart");
+        }
+
+        Inventory inventory = inventoryRepository.findByVariantId(cartItem.getVariant().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Inventory not found"));
+
+        if (inventory.getAvailableQuantity() < quantity) {
+            throw new IllegalArgumentException("Insufficient inventory");
+        }
+
+        cartItem.setQuantity(quantity);
+        cartItemRepository.save(cartItem);
+
+        return mapCart(cart);
+    }
+
+    @Transactional
+    public CartResponse deleteItem(UUID itemId, String sessionId) {
+        Cart cart = cartRepository.findBySessionIdAndActiveTrue(sessionId)
+                .orElseThrow(() -> new IllegalArgumentException("Cart not found"));
+
+        CartItem cartItem = cartItemRepository.findById(itemId)
+                .orElseThrow(() -> new IllegalArgumentException("Cart item not found"));
+
+        if (!cartItem.getCart().getId().equals(cart.getId())) {
+            throw new IllegalArgumentException("Cart item does not belong to this cart");
+        }
+
+        cartItemRepository.delete(cartItem);
+        cart.getItems().remove(cartItem);
+
+        return mapCart(cart);
+    }
+
     @Transactional(readOnly = true)
     public CartResponse getCart(String sessionId) {
         Cart cart = cartRepository.findBySessionIdAndActiveTrue(sessionId)
