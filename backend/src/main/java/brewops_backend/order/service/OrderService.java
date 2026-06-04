@@ -12,6 +12,9 @@ import brewops_backend.order.entity.OrderItem;
 import brewops_backend.order.entity.OrderStatus;
 import brewops_backend.order.repository.CartRepository;
 import brewops_backend.order.repository.OrderRepository;
+import brewops_backend.user.entity.User;
+import brewops_backend.user.repository.UserRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +32,7 @@ public class OrderService {
     private final CartRepository cartRepository;
     private final OrderRepository orderRepository;
     private final InventoryService inventoryService;
+    private final UserRepository userRepository;
 
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request) {
@@ -44,6 +48,13 @@ public class OrderService {
         order.setOrderNumber(generateOrderNumber());
         order.setStatus(OrderStatus.PENDING);
         order.setCurrency("INR");
+
+        UUID authUserId = getAuthenticatedUserId();
+        if (authUserId != null) {
+            userRepository.findById(authUserId).ifPresent(order::setUser);
+        } else if (cart.getUser() != null) {
+            order.setUser(cart.getUser());
+        }
 
         BigDecimal subtotal = BigDecimal.ZERO;
 
@@ -128,5 +139,13 @@ public class OrderService {
 
     private String generateOrderNumber() {
         return "BO-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
+    }
+
+    private UUID getAuthenticatedUserId() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof UUID userId) {
+            return userId;
+        }
+        return null;
     }
 }

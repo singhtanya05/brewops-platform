@@ -7,7 +7,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@Profile("test")
+@Profile("test & !auth-test")
 public class TestSecurityConfig {
 
     @Bean

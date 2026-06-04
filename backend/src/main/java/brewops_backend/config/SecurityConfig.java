@@ -14,7 +14,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableMethodSecurity
-@Profile("!test")
+@Profile("!test | auth-test")
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -43,6 +43,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/payments").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/payments/**").permitAll()
                         .requestMatchers("/api/v1/payments/*/complete", "/api/v1/payments/*/fail").permitAll()
+                        .requestMatchers("/api/v1/suppliers/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/purchase-orders/*/receive").hasAnyRole("STAFF", "ADMIN")
+                        .requestMatchers("/api/v1/purchase-orders/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/kitchen/**").hasAnyRole("STAFF", "ADMIN")
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/payments/*/refund").hasRole("ADMIN")

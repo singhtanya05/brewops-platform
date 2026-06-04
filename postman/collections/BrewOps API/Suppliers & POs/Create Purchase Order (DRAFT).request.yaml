@@ -1,0 +1,28 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/purchase-orders"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "supplierId": "{{supplierId}}",
+      "poNumber": "PO-{{$timestamp}}",
+      "items": [
+        {
+          "variantId": "{{variantId}}",
+          "quantity": 50,
+          "unitCost": 12.50
+        }
+      ]
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', () => pm.response.to.have.status(200));
+      const body = pm.response.json();
+      pm.environment.set('poId', body.id);
+      pm.test('Status is DRAFT', () => pm.expect(body.status).to.eql('DRAFT'));
+    language: text/javascript
+order: 2000

@@ -11,12 +11,16 @@ import brewops_backend.order.entity.Cart;
 import brewops_backend.order.entity.CartItem;
 import brewops_backend.order.repository.CartItemRepository;
 import brewops_backend.order.repository.CartRepository;
+import brewops_backend.user.entity.User;
+import brewops_backend.user.repository.UserRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +30,7 @@ public class CartService {
     private final CartItemRepository cartItemRepository;
     private final ProductVariantRepository productVariantRepository;
     private final InventoryRepository inventoryRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     public CartResponse addItem(AddCartItemRequest request) {
@@ -46,6 +51,12 @@ public class CartService {
                     newCart.setSessionId(request.sessionId());
                     return cartRepository.save(newCart);
                 });
+
+        UUID authUserId = getAuthenticatedUserId();
+        if (authUserId != null) {
+            userRepository.findById(authUserId).ifPresent(cart::setUser);
+            cartRepository.save(cart);
+        }
 
         CartItem cartItem = cartItemRepository.findByCartIdAndVariantId(cart.getId(), variant.getId())
                 .orElseGet(() -> {
@@ -108,5 +119,13 @@ public class CartService {
                 items,
                 totalAmount
         );
+    }
+
+    private UUID getAuthenticatedUserId() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof UUID userId) {
+            return userId;
+        }
+        return null;
     }
 }

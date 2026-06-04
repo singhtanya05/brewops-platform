@@ -12,6 +12,8 @@ localResources:
     - ../backend/HELP.md
     - ../README.md
 
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
 cloudResources:
   collections:
-    ../postman/collections/BrewOps API: 936af3f1-d623-424f-93c2-71c65a5cd8ff
+    ../postman/collections/BrewOps API: cca92579-6eec-44a9-be9c-747a9b95b3a4

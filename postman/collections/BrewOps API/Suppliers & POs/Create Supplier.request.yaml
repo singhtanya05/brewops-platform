@@ -1,0 +1,22 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/suppliers"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "name": "Global Brew Ingredients Ltd",
+      "contactName": "Alice Cooper",
+      "email": "alice@brew-ingredients.local",
+      "phone": "+919876543210"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', () => pm.response.to.have.status(200));
+      const body = pm.response.json();
+      pm.environment.set('supplierId', body.id);
+    language: text/javascript
+order: 1000

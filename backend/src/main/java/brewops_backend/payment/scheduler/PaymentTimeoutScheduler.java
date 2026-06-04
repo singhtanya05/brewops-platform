@@ -19,13 +19,14 @@ import java.util.List;
 
 @Slf4j
 @Component
-@Profile("!test")
 @RequiredArgsConstructor
 public class PaymentTimeoutScheduler {
 
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
     private final PaymentService paymentService;
+    private final brewops_backend.inventory.service.InventoryService inventoryService;
+    private final brewops_backend.order.service.OrderLifecycleService orderLifecycleService;
 
     @Value("${brewops.payment.timeout-minutes:30}")
     private int timeoutMinutes;
@@ -34,15 +35,27 @@ public class PaymentTimeoutScheduler {
     @Transactional
     public void expireAbandonedPayments() {
         LocalDateTime cutoff = LocalDateTime.now().minusMinutes(timeoutMinutes);
-        List<Order> staleOrders = orderRepository.findByStatusAndUpdatedAtBefore(
+        
+        // 1. Expire stale PAYMENT_PENDING orders
+        List<Order> stalePaymentPending = orderRepository.findByStatusAndUpdatedAtBefore(
                 OrderStatus.PAYMENT_PENDING, cutoff
         );
-
-        for (Order order : staleOrders) {
+        for (Order order : stalePaymentPending) {
             paymentRepository.findByOrder_Id(order.getId()).ifPresent(payment -> {
                 log.info("Expiring abandoned payment {} for order {}", payment.getId(), order.getId());
                 paymentService.failPayment(payment.getId(), "PAYMENT_TIMEOUT");
             });
+        }
+
+        // 2. Expire stale PENDING orders
+        List<Order> stalePending = orderRepository.findByStatusAndUpdatedAtBefore(
+                OrderStatus.PENDING, cutoff
+        );
+        for (Order order : stalePending) {
+            log.info("Expiring stale PENDING order {} due to checkout abandonment", order.getId());
+            inventoryService.releaseForOrder(order);
+            orderLifecycleService.transition(order, OrderStatus.CANCELLED, "Order expired due to payment inaction");
+            orderRepository.save(order);
         }
     }
 }

@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/purchase-orders/{{poId}}/receive"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "receivedByUserId": null,
+      "notes": "Received 50 units in perfect condition"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', () => pm.response.to.have.status(200));
+      const body = pm.response.json();
+      pm.test('Status is RECEIVED', () => pm.expect(body.status).to.eql('RECEIVED'));
+    language: text/javascript
+order: 4000

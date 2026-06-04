@@ -153,6 +153,54 @@ class OrderPaymentFlowIntegrationTest extends AbstractIntegrationTest {
         );
     }
 
+    @Test
+    void checkoutTwoOrdersOnLastInventoryUnit() {
+        UUID variantId = fetchFirstAvailableVariantId();
+        Inventory inventory = inventoryRepository.findByVariantId(variantId).orElseThrow();
+        inventory.setAvailableQuantity(1);
+        inventory.setReservedQuantity(0);
+        inventoryRepository.save(inventory);
+
+        String session1 = "session-first-" + UUID.randomUUID();
+        String session2 = "session-second-" + UUID.randomUUID();
+
+        restTemplate.postForEntity(
+                "/api/v1/cart/items",
+                new AddCartItemRequest(session1, variantId, 1),
+                Void.class
+        );
+        restTemplate.postForEntity(
+                "/api/v1/cart/items",
+                new AddCartItemRequest(session2, variantId, 1),
+                Void.class
+        );
+
+        ResponseEntity<OrderResponse> orderResponse1 = restTemplate.postForEntity(
+                "/api/v1/orders",
+                new CreateOrderRequest(session1),
+                OrderResponse.class
+        );
+        assertThat(orderResponse1.getStatusCode()).isEqualTo(HttpStatus.OK);
+        UUID orderId1 = orderResponse1.getBody().orderId();
+        assertThat(orderId1).isNotNull();
+
+        Inventory afterOrder1 = inventoryRepository.findByVariantId(variantId).orElseThrow();
+        assertThat(afterOrder1.getAvailableQuantity()).isEqualTo(0);
+        assertThat(afterOrder1.getReservedQuantity()).isEqualTo(1);
+
+        ResponseEntity<String> orderResponse2 = restTemplate.postForEntity(
+                "/api/v1/orders",
+                new CreateOrderRequest(session2),
+                String.class
+        );
+        assertThat(orderResponse2.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(orderResponse2.getBody()).contains("Insufficient inventory");
+
+        Inventory finalInventory = inventoryRepository.findByVariantId(variantId).orElseThrow();
+        assertThat(finalInventory.getAvailableQuantity()).isEqualTo(0);
+        assertThat(finalInventory.getReservedQuantity()).isEqualTo(1);
+    }
+
     private UUID fetchFirstAvailableVariantId() {
         ResponseEntity<List<MenuCategoryResponse>> menuResponse = restTemplate.exchange(
                 "/api/v1/menu",

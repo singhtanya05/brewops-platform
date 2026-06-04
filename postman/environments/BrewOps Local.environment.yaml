@@ -1,0 +1,24 @@
+name: BrewOps Local
+values:
+  - key: baseUrl
+    value: 'http://localhost:8080'
+  - key: sessionId
+    value: guest-session-001
+  - key: variantId
+    value: ''
+  - key: orderId
+    value: ''
+  - key: paymentId
+    value: ''
+  - key: idempotencyKey
+    value: ''
+  - key: token
+    value: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2ZjcwZTJhNC1kY2M3LTRjZDMtYjg5MS0wNzQxZGY0MjFhN2UiLCJlbWFpbCI6InN0YWZmQGJyZXdvcHMubG9jYWwiLCJyb2xlcyI6WyJTVEFGRiJdLCJpYXQiOjE3ODA1ODM4ODYsImV4cCI6MTc4MDY3MDI4Nn0.W403bTCylkqKLpR-UumNYZarKxEWlfBFEjOAJ9H6rz4
+  - key: userId
+    value: 6f70e2a4-dcc7-4cd3-b891-0741df421a7e
+  - key: staffEmail
+    value: staff@brewops.local
+  - key: staffPassword
+    value: password123
+  - key: stripeSignature
+    value: ''
