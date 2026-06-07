@@ -21,5 +21,35 @@ services:
     ports:
       - "6379:6379"
 
+  backend:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile
+    container_name: brewops-backend
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/brewops
+      - SPRING_DATASOURCE_USERNAME=brewops_user
+      - SPRING_DATASOURCE_PASSWORD=brewops_password
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+    depends_on:
+      - postgres
+      - redis
+
+  frontend:
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+    container_name: brewops-frontend
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
 volumes:
   postgres_data:
