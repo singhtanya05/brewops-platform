@@ -47,10 +47,20 @@
             <!-- Left Sidebar (Panel A) -->
             <aside class="sidebar">
                 <nav class="nav-group" id="navigationGroup">
+                    <!-- Customer Links -->
                     <a class="nav-item active" id="navStore" onclick="app.switchView('store')">
                         <span class="nav-item-icon">🏠</span>
                         <span>Storefront</span>
                     </a>
+                    <a class="nav-item hidden" id="navMyOrders" onclick="app.switchView('my_orders')">
+                        <span class="nav-item-icon">🧾</span>
+                        <span>My Orders</span>
+                    </a>
+                    <a class="nav-item hidden" id="navProfile" onclick="app.switchView('profile')">
+                        <span class="nav-item-icon">👤</span>
+                        <span>Profile</span>
+                    </a>
+                    <!-- Staff/Admin Links -->
                     <a class="nav-item hidden" id="navKitchen" onclick="app.switchView('kitchen')">
                         <span class="nav-item-icon">🍳</span>
                         <span>Kitchen Queue</span>

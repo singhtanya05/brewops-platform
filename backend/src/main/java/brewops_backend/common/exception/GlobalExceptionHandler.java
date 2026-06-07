@@ -1,12 +1,14 @@
 package brewops_backend.common.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -16,6 +18,7 @@ public class GlobalExceptionHandler {
             InvalidOrderStateException ex,
             HttpServletRequest request
     ) {
+        log.warn("InvalidOrderStateException for {}: {}", request.getRequestURI(), ex.getMessage());
         return new ApiErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.CONFLICT.value(),
@@ -31,6 +34,7 @@ public class GlobalExceptionHandler {
             IdempotencyConflictException ex,
             HttpServletRequest request
     ) {
+        log.warn("IdempotencyConflictException for {}: {}", request.getRequestURI(), ex.getMessage());
         return new ApiErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.CONFLICT.value(),
@@ -46,6 +50,7 @@ public class GlobalExceptionHandler {
             IllegalArgumentException ex,
             HttpServletRequest request
     ) {
+        log.warn("IllegalArgumentException for {}: {}", request.getRequestURI(), ex.getMessage());
         return new ApiErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
@@ -68,6 +73,7 @@ public class GlobalExceptionHandler {
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .orElse("Validation failed");
 
+        log.warn("Validation failed for {}: {}", request.getRequestURI(), message);
         return new ApiErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
@@ -83,6 +89,7 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request
     ) {
+        log.error("Unhandled exception processing request {}: {}", request.getRequestURI(), ex.getMessage(), ex);
         return new ApiErrorResponse(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),

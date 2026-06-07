@@ -52,10 +52,33 @@ class BrewOpsApp {
             avatar.textContent = role.charAt(0);
             
             // Adjust sidebar navigation items
-            document.getElementById('navKitchen').classList.remove('hidden');
+            const navStore = document.getElementById('navStore');
+            const navMyOrders = document.getElementById('navMyOrders');
+            const navProfile = document.getElementById('navProfile');
+            const navKitchen = document.getElementById('navKitchen');
+            const navSuppliers = document.getElementById('navSuppliers');
+            const navInventory = document.getElementById('navInventory');
+            
+            navStore.classList.add('hidden');
+            if (navMyOrders) navMyOrders.classList.add('hidden');
+            if (navProfile) navProfile.classList.add('hidden');
+            navKitchen.classList.add('hidden');
+            navSuppliers.classList.add('hidden');
+            navInventory.classList.add('hidden');
+
             if (role === 'ADMIN') {
-                document.getElementById('navSuppliers').classList.remove('hidden');
-                document.getElementById('navInventory').classList.remove('hidden');
+                navKitchen.classList.remove('hidden');
+                navSuppliers.classList.remove('hidden');
+                navInventory.classList.remove('hidden');
+                // Auto switch if on a customer view
+                if (this.currentView === 'store') this.switchView('kitchen');
+            } else if (role === 'STAFF') {
+                navKitchen.classList.remove('hidden');
+                if (this.currentView === 'store') this.switchView('kitchen');
+            } else {
+                navStore.classList.remove('hidden');
+                if (navMyOrders) navMyOrders.classList.remove('hidden');
+                if (navProfile) navProfile.classList.remove('hidden');
             }
         } else {
             roleBadge.textContent = 'GUEST';
@@ -64,6 +87,13 @@ class BrewOpsApp {
             loginBtn.classList.remove('hidden');
             logoutBtn.classList.add('hidden');
             avatar.classList.add('hidden');
+            
+            const navStore = document.getElementById('navStore');
+            const navMyOrders = document.getElementById('navMyOrders');
+            const navProfile = document.getElementById('navProfile');
+            if (navStore) navStore.classList.remove('hidden');
+            if (navMyOrders) navMyOrders.classList.add('hidden');
+            if (navProfile) navProfile.classList.add('hidden');
             
             document.getElementById('navKitchen').classList.add('hidden');
             document.getElementById('navSuppliers').classList.add('hidden');
@@ -206,7 +236,8 @@ class BrewOpsApp {
                     card.style.display = 'flex';
                     card.style.flexDirection = 'column';
                     card.style.position = 'relative';
-                    card.style.padding = '24px 20px 32px 20px';
+                    card.style.padding = '16px';
+                    card.style.gap = '12px';
                     
                     let emoji = '☕';
                     let bgGradient = 'radial-gradient(circle, #FBF7F4 0%, #F1E9E4 100%)';
@@ -222,30 +253,22 @@ class BrewOpsApp {
                     }
                     
                     card.innerHTML = `
-                        <div style="display: flex; gap: 20px; align-items: center; width: 100%;">
-                            <!-- Left: Drink illustration box -->
-                            <div class="drink-image-box" style="width: 130px; height: 130px; flex-shrink: 0; margin-bottom: 0; background: ${bgGradient}; display: flex; justify-content: center; align-items: center; border-radius: 24px; box-shadow: var(--shadow-clay-input); border: 2px solid rgba(255,255,255,0.7); position: relative; overflow: hidden; transition: transform 0.2s ease;">
-                                <!-- Glossy highlight overlay -->
-                                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to bottom, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 100%); pointer-events: none; border-radius: 24px 24px 0 0;"></div>
-                                <!-- Floating emoji -->
-                                <span style="font-size: 64px; display: inline-block; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.15)); transform: rotate(-5deg); transition: transform 0.2s ease;">${emoji}</span>
-                            </div>
-                            <!-- Right: Drink Details -->
-                            <div style="flex: 1; display: flex; flex-direction: column; gap: 4px; overflow: hidden;">
-                                <div class="drink-name" style="font-size: 15px; margin-bottom: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${product.name}</div>
-                                <div style="font-size: 11px; font-weight: 600; color: var(--accent-coffee); opacity: 0.85; margin-bottom: 2px;">${variant.name}</div>
-                                <div style="font-size: 10px; color: var(--text-secondary);">SKU: ${variant.sku} | Stock: ${variant.availableQuantity}</div>
-                                <div class="drink-meta" style="margin-top: 6px; display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                                    <span class="drink-price" style="font-size: 15px; font-weight:700;">$${variant.price.toFixed(2)}</span>
-                                    <button class="btn-clay btn-primary" style="padding: 6px 12px; font-size: 11px;" onclick="app.openCustomizationModal('${variant.variantId}', ${variant.price}, '${product.name} - ${variant.name}', '${product.description || ""}')">Add</button>
-                                </div>
-                            </div>
+                        <!-- Top: Drink illustration box -->
+                        <div class="drink-image-box" style="width: 100%; height: 180px; flex-shrink: 0; margin-bottom: 0; background: ${bgGradient}; display: flex; justify-content: center; align-items: center; border-radius: 16px; box-shadow: var(--shadow-clay-input); border: 1px solid rgba(255,255,255,0.7); position: relative; overflow: hidden; transition: transform 0.2s ease;">
+                            <!-- Glossy highlight overlay -->
+                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 50%; background: linear-gradient(to bottom, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 100%); pointer-events: none; border-radius: 16px 16px 0 0;"></div>
+                            <!-- Floating emoji -->
+                            <span style="font-size: 80px; display: inline-block; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.15)); transform: rotate(-5deg); transition: transform 0.2s ease;">${emoji}</span>
                         </div>
-                        
-                        <!-- Bottom Overlapping Pill Badge: Live Feedback Score -->
-                        <div style="position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); background: #EAF3EB; border: 1.5px solid #C4DFC7; border-radius: 20px; padding: 4px 14px; font-family: 'Outfit', sans-serif; font-size: 10px; font-weight: 700; color: #508055; display: flex; align-items: center; gap: 6px; box-shadow: var(--shadow-clay-button); white-space: nowrap; pointer-events: none; z-index: 10;">
-                            <span style="background: #7DA07A; width: 6px; height: 6px; border-radius: 50%; display: inline-block;"></span>
-                            LIVE FEEDBACK SCORE: <span style="color: var(--text-primary);">4.8 ★</span>
+                        <!-- Bottom: Drink Details -->
+                        <div style="display: flex; flex-direction: column; gap: 4px; padding: 4px;">
+                            <div class="drink-name" style="font-size: 16px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-primary); font-weight: 700;">${product.name}</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.3; margin-bottom: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${product.description || variant.name}</div>
+                            
+                            <div class="drink-meta" style="margin-top: auto; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                <span class="drink-price" style="font-size: 16px; font-weight:700; color: var(--text-primary);">$${variant.price.toFixed(2)}</span>
+                                <button class="btn-clay btn-primary" style="padding: 6px 16px; font-size: 12px; border-radius: 20px; background-color: var(--accent-coffee); color: white;" onclick="app.openCustomizationModal('${variant.variantId}', ${variant.price}, '${product.name} - ${variant.name}', '${product.description || ""}')">Add to Cart +</button>
+                            </div>
                         </div>
                     `;
                     menuGrid.appendChild(card);
@@ -467,21 +490,30 @@ class BrewOpsApp {
         try {
             if (newQty <= 0) {
                 // Delete item
-                await fetch(`${this.apiBaseUrl}/cart/items/${itemId}?sessionId=${this.sessionId}`, {
+                const resp = await fetch(`${this.apiBaseUrl}/cart/items/${itemId}?sessionId=${this.sessionId}`, {
                     method: 'DELETE'
                 });
+                if (!resp.ok) {
+                    const err = await resp.json();
+                    throw new Error(err.message || 'Failed to remove item');
+                }
             } else {
                 // Update qty
-                await fetch(`${this.apiBaseUrl}/cart/items/${itemId}?sessionId=${this.sessionId}`, {
+                const resp = await fetch(`${this.apiBaseUrl}/cart/items/${itemId}?sessionId=${this.sessionId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ quantity: newQty })
                 });
+                if (!resp.ok) {
+                    const err = await resp.json();
+                    throw new Error(err.message || 'Failed to update quantity');
+                }
             }
             this.updateCartDrawer();
             this.loadMenu();
         } catch (err) {
             console.error(err);
+            alert(err.message);
         }
     }
 
@@ -659,22 +691,51 @@ class BrewOpsApp {
             
             orders.forEach(order => {
                 const card = document.createElement('div');
-                card.className = 'clay-card kanban-card';
-                
-                const itemsStr = order.items.map(it => `${it.quantity}x ${it.productName} (${it.variantName})`).join('<br>');
+                card.className = 'kanban-card';
                 
                 let actionBtn = '';
+                let progressColor = 'var(--text-secondary)';
+                let progressWidth = '0%';
+                
                 if (order.status === 'PAID') {
-                    actionBtn = `<button class="btn-clay btn-primary" style="width:100%; margin-top:8px;" onclick="app.updateKitchenStatus('${order.orderId}', 'PREPARING')">Start Brewing</button>`;
+                    actionBtn = `<button class="btn-clay btn-primary" style="width:100%; margin-top:12px; font-size:12px; padding:8px;" onclick="app.updateKitchenStatus('${order.orderId}', 'PREPARING')">Start Brewing</button>`;
+                    progressColor = 'var(--accent-orange)';
+                    progressWidth = '30%';
                 } else if (order.status === 'PREPARING') {
-                    actionBtn = `<button class="btn-clay btn-matcha" style="width:100%; margin-top:8px;" onclick="app.updateKitchenStatus('${order.orderId}', 'READY')">Mark Ready</button>`;
+                    actionBtn = `<button class="btn-clay btn-matcha" style="width:100%; margin-top:12px; font-size:12px; padding:8px;" onclick="app.updateKitchenStatus('${order.orderId}', 'READY')">Mark Ready</button>`;
+                    progressColor = 'var(--accent-coffee)';
+                    progressWidth = '70%';
                 } else if (order.status === 'READY') {
-                    actionBtn = `<button class="btn-clay" style="width:100%; margin-top:8px;" onclick="app.updateKitchenStatus('${order.orderId}', 'COMPLETED')">Complete Pickup</button>`;
+                    actionBtn = `<button class="btn-clay" style="width:100%; margin-top:12px; font-size:12px; padding:8px;" onclick="app.updateKitchenStatus('${order.orderId}', 'COMPLETED')">Complete Pickup</button>`;
+                    progressColor = 'var(--accent-matcha)';
+                    progressWidth = '100%';
                 }
                 
                 card.innerHTML = `
-                    <div style="font-weight:700; margin-bottom:6px;">Order #${order.orderNumber.substring(order.orderNumber.length - 6)}</div>
-                    <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">${itemsStr}</div>
+                    <div style="display: flex; justify-content: center; margin-bottom: 12px; color: var(--accent-coffee); font-size: 24px;">
+                        ☕
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #EAE6DF; padding-bottom: 8px; margin-bottom: 12px;">
+                        <span style="font-weight: 700; font-size: 14px;">#${order.orderNumber.substring(order.orderNumber.length - 4)}</span>
+                        <span style="font-size: 11px; color: var(--text-secondary); font-weight: 600;">${new Date(order.createdAt || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                    </div>
+                    <div style="font-size: 13px; color: var(--text-primary); line-height: 1.6; margin-bottom: 16px;">
+                        ${order.items.map(it => `
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-weight: 500;">${it.productName} ${it.productName.toLowerCase().includes('croissant') ? '🥐' : '☕'}</span>
+                                <span style="color: var(--text-secondary); font-size: 11px;">x${it.quantity}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="background: rgba(0,0,0,0.05); border-radius: 12px; height: 4px; width: 100%; margin-bottom: 4px; overflow: hidden;">
+                        <div style="background: ${progressColor}; height: 100%; width: ${progressWidth}; border-radius: 12px; transition: width 0.3s ease;"></div>
+                    </div>
+                    <div style="font-size: 11px; color: ${progressColor}; font-weight: 600; text-align: left; margin-bottom: 8px;">${order.status}</div>
+                    
+                    <div style="display: flex; align-items: center; gap: 8px; border-top: 1px solid #EAE6DF; padding-top: 12px;">
+                        <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--bg-card); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: var(--accent-coffee); border: 1px solid #EAE6DF;">A</div>
+                        <span style="font-size: 12px; color: var(--text-secondary); font-weight: 500;">Assigned</span>
+                    </div>
                     ${actionBtn}
                 `;
                 

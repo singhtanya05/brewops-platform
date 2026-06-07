@@ -51,8 +51,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/cart/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/cart/**").permitAll()
+                        .requestMatchers("/api/v1/cart/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/orders").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/orders/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/payments").permitAll()

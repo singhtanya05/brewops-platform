@@ -277,8 +277,8 @@ body {
 /* Menu Grid */
 .menu-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 32px 20px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 24px;
 }
 
 .drink-image-box {
@@ -573,7 +573,21 @@ body {
 }
 
 .kanban-card {
+    background: linear-gradient(180deg, #FFFFFF 0%, #FAF8F5 100%);
+    border-radius: 4px;
+    padding: 16px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+    border: 1px solid #EAE6DF;
+    border-top: 2px dashed #D4CFC7;
+    border-bottom: 2px dashed #D4CFC7;
+    position: relative;
     cursor: grab;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kanban-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.08);
 }
 
 /* Toggle Switch View Helper */
