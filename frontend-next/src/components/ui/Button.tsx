@@ -14,11 +14,11 @@ export function Button({
   ...props
 }: ButtonProps) {
   // Base classes for the claymorphism aesthetic
-  const baseClasses = 'inline-flex items-center justify-center font-bold rounded-full transition-all duration-200 active:scale-95 shadow-[4px_4px_10px_rgba(0,0,0,0.1),-4px_-4px_10px_rgba(255,255,255,0.8)] border border-white/40';
+  const baseClasses = 'inline-flex items-center justify-center font-bold rounded-2xl transition-all duration-200 active:scale-95 shadow-[var(--shadow-clay-button)] active:shadow-[var(--shadow-clay-pressed)] border border-white/40';
   
   const variantClasses = {
     primary: 'bg-coffee text-white hover:opacity-90',
-    secondary: 'bg-card text-foreground hover:bg-gray-50',
+    secondary: 'bg-card text-foreground hover:bg-[#F2EFE9]',
     matcha: 'bg-matcha text-white hover:opacity-90',
   };
 

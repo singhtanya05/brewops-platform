@@ -3,11 +3,16 @@
 :root {
   --background: #FAF8F5;
   --foreground: #3E2F23;
-  --card: #FFFFFF;
-  --text-secondary: #8B7E74;
-  --matcha: #87C68E;
+  --card: #FDFDFD;
+  --text-secondary: #70655B;
+  --matcha: #7DA07A;
   --coffee: #4A3728;
-  --orange: #E68A5C;
+  --orange: #EFA850;
+
+  --shadow-clay-card: 12px 12px 24px #dbd6cb, -12px -12px 24px #ffffff, inset 3px 3px 6px rgba(255, 255, 255, 0.95), inset -3px -3px 6px rgba(74, 55, 40, 0.04);
+  --shadow-clay-button: 6px 6px 12px #dbd6cb, -6px -6px 12px #ffffff, inset 2px 2px 4px rgba(255, 255, 255, 0.6), inset -2px -2px 4px rgba(74, 55, 40, 0.15);
+  --shadow-clay-input: inset 4px 4px 8px #dbd6cb, inset -4px -4px 8px #ffffff;
+  --shadow-clay-pressed: inset 6px 6px 12px #b0a99c, inset -6px -6px 12px #ffffff;
 }
 
 @theme inline {
@@ -19,9 +24,34 @@
   --color-coffee: var(--coffee);
   --color-orange: var(--orange);
   --font-sans: var(--font-outfit);
+
+  --shadow-clay-card: var(--shadow-clay-card);
+  --shadow-clay-button: var(--shadow-clay-button);
+  --shadow-clay-input: var(--shadow-clay-input);
+  --shadow-clay-pressed: var(--shadow-clay-pressed);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+@keyframes float-cup {
+  0% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-15px) rotate(0deg); }
+  100% { transform: translateY(0) rotate(-5deg); }
+}
+
+.animate-float-cup {
+  animation: float-cup 4s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 4s ease-in-out infinite;
 }

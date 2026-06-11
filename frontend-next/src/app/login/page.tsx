@@ -16,7 +16,13 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
+import { useRouter } from "next/navigation";
+import { useAuthStore, Role } from "@/store/useAuthStore";
+
 export default function LoginPage() {
+  const router = useRouter();
+  const { login } = useAuthStore();
+
   const {
     register,
     handleSubmit,
@@ -26,12 +32,35 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-    // In Step 4, we will connect this to the actual Spring Boot backend
-    console.log("Valid form submitted!", data);
-    
-    // Simulate network delay to show the loading state
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    alert("Login successful! Check console for data.");
+    try {
+      const resp = await fetch("http://localhost:8080/api/v1/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!resp.ok) throw new Error("Authentication failed");
+      
+      const responseData = await resp.json();
+      const token = responseData.token;
+
+      // Parse JWT purely on the frontend to extract roles
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const roles = payload.roles || [];
+      const primaryRole: Role = roles.includes('ADMIN') ? 'ADMIN' : (roles.includes('STAFF') ? 'STAFF' : 'CUSTOMER');
+
+      login(token, primaryRole);
+      
+      if (primaryRole === 'ADMIN') {
+        router.push('/suppliers');
+      } else if (primaryRole === 'STAFF') {
+        router.push('/kitchen');
+      } else {
+        router.push('/');
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to login");
+    }
   };
 
   return (

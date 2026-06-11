@@ -1,15 +1,31 @@
 const API_BASE_URL = 'http://localhost:8080/api/v1';
 
-export interface MenuItem {
-  id: string;
+export interface MenuVariant {
+  variantId: string;
   name: string;
-  description: string;
-  category: string;
-  basePrice: number;
-  imageUrl: string;
+  sku: string;
+  price: number;
+  currency: string;
+  availableQuantity: number;
 }
 
-export async function fetchMenu(): Promise<MenuItem[]> {
+export interface MenuProduct {
+  productId: string;
+  name: string;
+  slug: string;
+  description: string;
+  imageUrl: string;
+  variants: MenuVariant[];
+}
+
+export interface MenuCategory {
+  categoryId: string;
+  name: string;
+  slug: string;
+  products: MenuProduct[];
+}
+
+export async function fetchMenu(): Promise<MenuCategory[]> {
   const res = await fetch(`${API_BASE_URL}/menu`);
   
   if (!res.ok) {
