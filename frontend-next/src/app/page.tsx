@@ -1,28 +1,49 @@
-import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
+import { fetchMenu } from "@/lib/api";
+import { ProductCard } from "@/components/ui/ProductCard";
 
 export default function Home() {
-  return (
-    <div className="min-h-screen p-8 flex flex-col items-center justify-center gap-8">
-      <div className="text-center space-y-4">
-        <h1 className="text-5xl font-bold text-coffee">BrewOps Enterprise</h1>
-        <p className="text-text-secondary text-lg">
-          Welcome to the new component-driven Next.js frontend!
-        </p>
-      </div>
+  const { data: menuItems, isLoading, error } = useQuery({
+    queryKey: ['menu'],
+    queryFn: fetchMenu,
+  });
 
-      <Card className="max-w-md w-full space-y-6">
-        <h2 className="text-2xl font-bold">Component Demo</h2>
-        <p className="text-text-secondary">
-          This is our reusable <code>&lt;Card&gt;</code> component containing three instances of our reusable <code>&lt;Button&gt;</code> component.
+  return (
+    <div className="min-h-screen bg-background flex flex-col p-8">
+      <header className="mb-12 text-center">
+        <h1 className="text-5xl font-bold text-coffee mb-4">BrewOps Storefront</h1>
+        <p className="text-text-secondary text-lg">
+          Select your favorite premium beverages and pastries.
         </p>
-        
-        <div className="flex flex-col gap-4">
-          <Button variant="primary">Primary Button</Button>
-          <Button variant="matcha">Matcha Button</Button>
-          <Button variant="secondary">Secondary Button</Button>
-        </div>
-      </Card>
+      </header>
+
+      <main className="max-w-6xl mx-auto w-full">
+        {isLoading && (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange"></div>
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-50 text-red-500 p-4 rounded-xl text-center">
+            Failed to load the menu. Is the backend running?
+          </div>
+        )}
+
+        {menuItems && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {menuItems.map((item) => (
+              <ProductCard 
+                key={item.id} 
+                item={item} 
+                onAddToCart={(item) => console.log("Added to cart:", item.name)} 
+              />
+            ))}
+          </div>
+        )}
+      </main>
     </div>
   );
 }
