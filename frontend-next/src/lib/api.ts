@@ -1,6 +1,12 @@
 import { useAuthStore } from '@/store/useAuthStore';
 
-const API_BASE_URL = 'http://localhost:8080/api/v1';
+const getApiBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    // Dynamically use whatever IP or hostname the browser is currently at
+    return `http://${window.location.hostname}:8080/api/v1`;
+  }
+  return 'http://localhost:8080/api/v1'; // Fallback for SSR
+};
 
 // Custom fetch wrapper that automatically attaches the JWT token
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
@@ -14,7 +20,8 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     headers.set('Content-Type', 'application/json');
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const baseUrl = getApiBaseUrl();
+  const response = await fetch(`${baseUrl}${endpoint}`, {
     ...options,
     headers,
   });
