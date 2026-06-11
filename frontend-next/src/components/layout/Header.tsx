@@ -31,8 +31,10 @@ export function Header() {
         >
           <Menu size={20} />
         </button>
-        <span className="text-[28px]" role="img" aria-label="logo">☕</span>
-        <span className="font-outfit font-bold text-[24px] text-coffee tracking-wide">CAFFEINE</span>
+        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <span className="text-[28px]" role="img" aria-label="logo">☕</span>
+          <span className="font-outfit font-bold text-[24px] text-coffee tracking-wide">BREWOPS</span>
+        </Link>
       </div>
 
       {/* Search Bar */}
@@ -92,7 +94,10 @@ export function Header() {
                   {role.charAt(0)}
                 </div>
                 <button 
-                  onClick={logout}
+                  onClick={() => {
+                    logout();
+                    window.location.href = '/'; // Full refresh to clear state
+                  }}
                   className="p-2 rounded-xl bg-card border border-white/60 shadow-[var(--shadow-clay-button)] hover:opacity-90 active:scale-95 transition-all text-red-500"
                   title="Logout"
                 >

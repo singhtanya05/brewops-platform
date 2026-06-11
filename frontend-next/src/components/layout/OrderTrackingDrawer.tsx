@@ -48,9 +48,15 @@ export function OrderTrackingDrawer() {
         </div>
 
         <div className="px-8 pb-8 flex-1 overflow-y-auto">
-          <h2 className="font-outfit text-2xl font-bold text-coffee mb-8">
+          <h2 className="font-outfit text-2xl font-bold text-coffee mb-6">
             Order Tracking #{currentOrderId || '000000'}
           </h2>
+
+          {status === 'completed' && (
+            <div className="bg-matcha/10 text-matcha font-bold text-[15px] px-4 py-3 rounded-xl mb-6 text-center border border-matcha/20 animate-in zoom-in duration-300">
+              🎉 Order complete! Please pick it up at the counter.
+            </div>
+          )}
 
           <div className="relative border-l-2 border-[#E6E1D8] ml-4 flex flex-col gap-8 pb-8">
             

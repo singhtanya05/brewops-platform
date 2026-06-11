@@ -1,4 +1,34 @@
+import { useAuthStore } from '@/store/useAuthStore';
+
 const API_BASE_URL = 'http://localhost:8080/api/v1';
+
+// Custom fetch wrapper that automatically attaches the JWT token
+export async function apiFetch(endpoint: string, options: RequestInit = {}) {
+  const token = useAuthStore.getState().token;
+  
+  const headers = new Headers(options.headers || {});
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+  if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
+    headers.set('Content-Type', 'application/json');
+  }
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text().catch(() => '');
+    throw new Error(`API Error ${response.status}: ${errorBody || response.statusText}`);
+  }
+
+  // Handle 204 No Content
+  if (response.status === 204) return null;
+  
+  return response.json();
+}
 
 export interface MenuVariant {
   variantId: string;
@@ -26,11 +56,6 @@ export interface MenuCategory {
 }
 
 export async function fetchMenu(): Promise<MenuCategory[]> {
-  const res = await fetch(`${API_BASE_URL}/menu`);
-  
-  if (!res.ok) {
-    throw new Error('Failed to fetch menu from backend');
-  }
-  
-  return res.json();
+  // We can use our secure apiFetch here
+  return apiFetch('/menu');
 }

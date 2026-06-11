@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Store, ChefHat, Truck, Package, ClipboardList } from 'lucide-react';
+import { Store, ChefHat, Truck, Package, ClipboardList, PieChart } from 'lucide-react';
 import { useAuthStore, Role } from '@/store/useAuthStore';
 import { useUIStore } from '@/store/useUIStore';
 
@@ -25,8 +25,15 @@ export function Sidebar() {
     setMounted(true);
   }, []);
 
+  const isManagement = role === 'STAFF' || role === 'ADMIN';
+
   const navItems: NavItem[] = [
-    { name: 'Storefront', href: '/', icon: <Store size={20} />, allowedRoles: ['GUEST', 'CUSTOMER'] },
+    { 
+      name: isManagement ? 'Overview Dashboard' : 'Storefront', 
+      href: '/', 
+      icon: isManagement ? <PieChart size={20} /> : <Store size={20} />, 
+      allowedRoles: ['GUEST', 'CUSTOMER', 'STAFF', 'ADMIN'] 
+    },
     { name: 'My Orders', href: '/orders', icon: <ClipboardList size={20} />, allowedRoles: ['GUEST', 'CUSTOMER'] },
     { name: 'Kitchen Queue', href: '/kitchen', icon: <ChefHat size={20} />, allowedRoles: ['STAFF', 'ADMIN'] },
     { name: 'Suppliers & POs', href: '/suppliers', icon: <Truck size={20} />, allowedRoles: ['ADMIN'] },
@@ -75,7 +82,7 @@ export function Sidebar() {
           
           <div className="text-6xl filter drop-shadow-md group-hover:scale-110 transition-transform mb-2">🏺</div>
           <div className="font-outfit text-xs font-bold tracking-widest text-text-secondary uppercase">
-            Caffeine
+            BrewOps
           </div>
         </div>
         

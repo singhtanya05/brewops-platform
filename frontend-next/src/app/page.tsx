@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchMenu, MenuProduct } from "@/lib/api";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { CustomizationModal } from "@/components/ui/CustomizationModal";
+import { useAuthStore } from "@/store/useAuthStore";
+import { AdminDashboard } from "@/components/dashboard/AdminDashboard";
 
 export default function Home() {
+  const { role } = useAuthStore();
   const [activeTab, setActiveTab] = useState<string>('all');
   const [selectedItem, setSelectedItem] = useState<{product: MenuProduct, categoryName: string} | null>(null);
 
@@ -16,6 +19,15 @@ export default function Home() {
     queryKey: ['menu'],
     queryFn: () => fetchMenu(),
   });
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null;
+
+  if (role === 'STAFF' || role === 'ADMIN') {
+    return <AdminDashboard />;
+  }
 
   return (
     <div className="p-6">

@@ -5,14 +5,25 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { CartDrawer } from '@/components/layout/CartDrawer';
 import { OrderTrackingDrawer } from '@/components/layout/OrderTrackingDrawer';
 import { useUIStore } from '@/store/useUIStore';
+import { useOrderStore } from '@/store/useOrderStore';
 
 export function WorkspaceWrapper({ children }: { children: React.ReactNode }) {
   const { isSidebarOpen } = useUIStore();
   
-  // Hydration fix
+  // Hydration fix & Cross-tab sync
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
+    
+    // Listen for changes from other tabs to create a "real-time" sync effect
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'brewops-order-storage') {
+        useOrderStore.persist.rehydrate();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   return (
