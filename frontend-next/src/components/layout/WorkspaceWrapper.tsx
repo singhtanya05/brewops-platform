@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { CartDrawer } from '@/components/layout/CartDrawer';
+import { OrderTrackingDrawer } from '@/components/layout/OrderTrackingDrawer';
 import { useUIStore } from '@/store/useUIStore';
 
 export function WorkspaceWrapper({ children }: { children: React.ReactNode }) {
@@ -29,6 +30,9 @@ export function WorkspaceWrapper({ children }: { children: React.ReactNode }) {
 
       {/* Slide-out Cart Drawer */}
       <CartDrawer />
+      
+      {/* Slide-out Order Tracking Drawer */}
+      <OrderTrackingDrawer />
     </div>
   );
 }

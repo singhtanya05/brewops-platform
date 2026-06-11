@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchMenu, Product } from "@/lib/api";
+import { fetchMenu, MenuProduct } from "@/lib/api";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -10,7 +10,7 @@ import { CustomizationModal } from "@/components/ui/CustomizationModal";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<string>('all');
-  const [selectedItem, setSelectedItem] = useState<{product: Product, categoryName: string} | null>(null);
+  const [selectedItem, setSelectedItem] = useState<{product: MenuProduct, categoryName: string} | null>(null);
 
   const { data: categories, isLoading, error } = useQuery({
     queryKey: ['menu'],

@@ -2,10 +2,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { useCartStore } from '@/store/useCartStore';
+import { useUIStore } from '@/store/useUIStore';
+import { useOrderStore } from '@/store/useOrderStore';
 import { PaymentModal } from '@/components/ui/PaymentModal';
 
 export function CartDrawer() {
   const { isCartOpen, items, toggleCart, removeItem, updateQuantity, getTotalPrice, clearCart } = useCartStore();
+  const { openTracking } = useUIStore();
+  const { addOrder } = useOrderStore();
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   
   // Hydration fix
@@ -21,10 +25,22 @@ export function CartDrawer() {
   };
 
   const handlePaymentSuccess = () => {
+    const mockOrderId = String(Math.floor(100000 + Math.random() * 900000));
+    
+    // Save to persistent order store
+    addOrder({
+      id: mockOrderId,
+      items: [...items],
+      totalAmount: getTotalPrice(),
+      status: 'paid',
+      createdAt: new Date().toISOString()
+    });
+
     setIsPaymentOpen(false);
     clearCart();
     toggleCart();
-    alert("Payment Successful! Your order has been placed.");
+    
+    openTracking(mockOrderId);
   };
 
   return (

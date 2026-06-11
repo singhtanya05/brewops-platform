@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Store, ChefHat, Truck, Package } from 'lucide-react';
+import { Store, ChefHat, Truck, Package, ClipboardList } from 'lucide-react';
 import { useAuthStore, Role } from '@/store/useAuthStore';
 import { useUIStore } from '@/store/useUIStore';
 
@@ -27,6 +27,7 @@ export function Sidebar() {
 
   const navItems: NavItem[] = [
     { name: 'Storefront', href: '/', icon: <Store size={20} />, allowedRoles: ['GUEST', 'CUSTOMER'] },
+    { name: 'My Orders', href: '/orders', icon: <ClipboardList size={20} />, allowedRoles: ['GUEST', 'CUSTOMER'] },
     { name: 'Kitchen Queue', href: '/kitchen', icon: <ChefHat size={20} />, allowedRoles: ['STAFF', 'ADMIN'] },
     { name: 'Suppliers & POs', href: '/suppliers', icon: <Truck size={20} />, allowedRoles: ['ADMIN'] },
     { name: 'Inventory Control', href: '/inventory', icon: <Package size={20} />, allowedRoles: ['ADMIN'] },

@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Product } from '@/lib/api';
+import { MenuProduct } from '@/lib/api';
 import { useCartStore } from '@/store/useCartStore';
 
 interface CustomizationModalProps {
-  product: Product;
+  product: MenuProduct;
   categoryName: string;
   onClose: () => void;
 }
