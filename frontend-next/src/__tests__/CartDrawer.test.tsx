@@ -34,6 +34,6 @@ describe('CartDrawer', () => {
     
     expect(screen.getByText('Cappuccino')).toBeInTheDocument();
     expect(screen.getByText('Note: Oat Milk')).toBeInTheDocument();
-    expect(screen.getByText('$300.00')).toBeInTheDocument();
+    expect(screen.getAllByText('$300.00')[0]).toBeInTheDocument();
   });
 });
