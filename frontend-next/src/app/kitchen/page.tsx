@@ -5,7 +5,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getKitchenOrders, updateKitchenOrderStatus } from '@/lib/api';
 
-type OrderStatus = 'paid' | 'brewing' | 'ready' | 'completed';
+type OrderStatus = 'paid' | 'preparing' | 'ready' | 'completed';
 
 export default function KitchenPage() {
   const queryClient = useQueryClient();

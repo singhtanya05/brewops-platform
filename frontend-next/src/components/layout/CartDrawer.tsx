@@ -5,10 +5,10 @@ import { useCartStore } from '@/store/useCartStore';
 import { useUIStore } from '@/store/useUIStore';
 import { useOrderStore } from '@/store/useOrderStore';
 import { PaymentModal } from '@/components/ui/PaymentModal';
-import { addCartItem, createOrder } from '@/lib/api';
+import { addCartItem, createOrder, apiFetch } from '@/lib/api';
 
 export function CartDrawer() {
-  const { isCartOpen, items, toggleCart, removeItem, updateQuantity, getTotalPrice, clearCart } = useCartStore();
+  const { isCartOpen, items, toggleCart, removeItem, updateQuantity, getTotalPrice, clearCart, getSessionId } = useCartStore();
   const { openTracking } = useUIStore();
   const { addOrder } = useOrderStore();
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
@@ -25,20 +25,31 @@ export function CartDrawer() {
     setIsPaymentOpen(true);
   };
 
-  const handlePaymentSuccess = async () => {
+  const handlePaymentSuccess = async (success: boolean = true) => {
     try {
-      // 1. Generate a temporary session ID for the backend cart
-      const sessionId = 'web-' + Math.random().toString(36).substring(2, 15);
+      if (!success) {
+        throw new Error("Payment declined by gateway");
+      }
+      // 1. Get the persistent session ID for the backend cart
+      const sessionId = getSessionId();
       
       // 2. Add all items to the backend cart
       for (const item of items) {
         // Fallback to productId if variantId is missing, though our types say it should be there
         const vId = item.variantId || item.productId;
-        await addCartItem(sessionId, vId, item.quantity);
+        await addCartItem(sessionId, vId, item.quantity, item.customizations);
       }
       
       // 3. Convert cart to order in the backend
       const orderResponse = await createOrder(sessionId);
+      
+      // 4. Mock Payment flow to advance order from PENDING to PAID
+      const paymentRes = await apiFetch('/payments', {
+        method: 'POST',
+        body: JSON.stringify({ orderId: orderResponse.orderId, idempotencyKey: 'mock_payment_' + Date.now() })
+      });
+      
+      await apiFetch(`/payments/${paymentRes.paymentId}/complete`, { method: 'POST' });
       
       setIsPaymentOpen(false);
       clearCart();

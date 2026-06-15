@@ -32,4 +32,7 @@ public class CartItem extends BaseEntity {
 
     @Column(name = "unit_price", nullable = false)
     private BigDecimal unitPrice;
+
+    @Column(name = "special_instructions")
+    private String specialInstructions;
 }

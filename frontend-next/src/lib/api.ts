@@ -63,10 +63,10 @@ export async function fetchMenu(): Promise<MenuCategory[]> {
   return apiFetch('/menu');
 }
 
-export async function addCartItem(sessionId: string, variantId: string, quantity: number) {
+export async function addCartItem(sessionId: string, variantId: string, quantity: number, specialInstructions?: string) {
   return apiFetch('/cart/items', {
     method: 'POST',
-    body: JSON.stringify({ sessionId, variantId, quantity })
+    body: JSON.stringify({ sessionId, variantId, quantity, specialInstructions })
   });
 }
 

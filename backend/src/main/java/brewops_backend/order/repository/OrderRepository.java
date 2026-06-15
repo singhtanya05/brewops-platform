@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface OrderRepository extends JpaRepository<Order, UUID> {
@@ -13,4 +14,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     List<Order> findByStatusInOrderByCreatedAtAsc(List<OrderStatus> statuses);
 
     List<Order> findByStatusAndUpdatedAtBefore(OrderStatus status, LocalDateTime updatedAtBefore);
+
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = "items")
+    Optional<Order> findWithItemsById(UUID id);
 }

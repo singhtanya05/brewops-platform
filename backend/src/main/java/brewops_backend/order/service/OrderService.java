@@ -66,6 +66,7 @@ public class OrderService {
             orderItem.setVariantName(cartItem.getVariant().getName());
             orderItem.setQuantity(cartItem.getQuantity());
             orderItem.setUnitPrice(cartItem.getUnitPrice());
+            orderItem.setSpecialInstructions(cartItem.getSpecialInstructions());
 
             BigDecimal lineTotal = cartItem.getUnitPrice()
                     .multiply(BigDecimal.valueOf(cartItem.getQuantity()));
@@ -107,7 +108,8 @@ public class OrderService {
                         item.getVariantName(),
                         item.getQuantity(),
                         item.getUnitPrice(),
-                        item.getLineTotal()
+                        item.getLineTotal(),
+                        item.getSpecialInstructions()
                 ))
                 .toList();
 

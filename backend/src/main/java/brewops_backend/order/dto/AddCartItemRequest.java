@@ -9,5 +9,6 @@ import java.util.UUID;
 public record AddCartItemRequest(
         @NotBlank String sessionId,
         @NotNull UUID variantId,
-        @Min(1) Integer quantity
+        @Min(1) Integer quantity,
+        String specialInstructions
 ) {}

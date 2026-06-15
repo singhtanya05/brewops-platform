@@ -58,7 +58,7 @@ class OrderPaymentFlowIntegrationTest extends AbstractIntegrationTest {
 
         restTemplate.postForEntity(
                 "/api/v1/cart/items",
-                new AddCartItemRequest(sessionId, variantId, 1),
+                new AddCartItemRequest(sessionId, variantId, 1, null),
                 Void.class
         );
 
@@ -99,7 +99,7 @@ class OrderPaymentFlowIntegrationTest extends AbstractIntegrationTest {
 
         restTemplate.postForEntity(
                 "/api/v1/cart/items",
-                new AddCartItemRequest(sessionId, variantId, 1),
+                new AddCartItemRequest(sessionId, variantId, 1, null),
                 Void.class
         );
 
@@ -128,7 +128,7 @@ class OrderPaymentFlowIntegrationTest extends AbstractIntegrationTest {
 
         restTemplate.postForEntity(
                 "/api/v1/cart/items",
-                new AddCartItemRequest(sessionId, variantId, 1),
+                new AddCartItemRequest(sessionId, variantId, 1, null),
                 Void.class
         );
 
@@ -166,12 +166,12 @@ class OrderPaymentFlowIntegrationTest extends AbstractIntegrationTest {
 
         restTemplate.postForEntity(
                 "/api/v1/cart/items",
-                new AddCartItemRequest(session1, variantId, 1),
+                new AddCartItemRequest(session1, variantId, 1, null),
                 Void.class
         );
         restTemplate.postForEntity(
                 "/api/v1/cart/items",
-                new AddCartItemRequest(session2, variantId, 1),
+                new AddCartItemRequest(session2, variantId, 1, null),
                 Void.class
         );
 

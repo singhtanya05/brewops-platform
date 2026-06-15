@@ -75,6 +75,9 @@ public class CartService {
         }
 
         cartItem.setQuantity(updatedQuantity);
+        if (request.specialInstructions() != null && !request.specialInstructions().isBlank()) {
+            cartItem.setSpecialInstructions(request.specialInstructions());
+        }
         cartItemRepository.save(cartItem);
 
         return getCart(request.sessionId());

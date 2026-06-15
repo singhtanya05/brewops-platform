@@ -10,5 +10,6 @@ public record OrderItemDetailResponse(
         String variantName,
         Integer quantity,
         BigDecimal unitPrice,
-        BigDecimal lineTotal
+        BigDecimal lineTotal,
+        String specialInstructions
 ) {}

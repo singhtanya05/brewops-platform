@@ -74,7 +74,7 @@ class UserCartOrderIntegrationTest extends AbstractIntegrationTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
         HttpEntity<AddCartItemRequest> cartRequest = new HttpEntity<>(
-                new AddCartItemRequest(sessionId, variantId, 1),
+                new AddCartItemRequest(sessionId, variantId, 1, "Oat Milk, Extra Hot"),
                 headers
         );
 
@@ -105,9 +105,10 @@ class UserCartOrderIntegrationTest extends AbstractIntegrationTest {
         assertThat(orderResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         UUID orderId = orderResponse.getBody().orderId();
 
-        Order order = orderRepository.findById(orderId).orElseThrow();
+        Order order = orderRepository.findWithItemsById(orderId).orElseThrow();
         assertThat(order.getUser()).isNotNull();
         assertThat(order.getUser().getId()).isEqualTo(savedUser.getId());
+        assertThat(order.getItems().get(0).getSpecialInstructions()).isEqualTo("Oat Milk, Extra Hot");
     }
 
     @Test
@@ -118,7 +119,7 @@ class UserCartOrderIntegrationTest extends AbstractIntegrationTest {
         // 1. Add cart item (Guest - no JWT)
         ResponseEntity<CartResponse> cartResponse = restTemplate.postForEntity(
                 "/api/v1/cart/items",
-                new AddCartItemRequest(sessionId, variantId, 1),
+                new AddCartItemRequest(sessionId, variantId, 1, null),
                 CartResponse.class
         );
         assertThat(cartResponse.getStatusCode()).isEqualTo(HttpStatus.OK);

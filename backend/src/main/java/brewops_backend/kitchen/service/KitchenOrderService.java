@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class KitchenOrderService {
 
     private static final List<OrderStatus> QUEUE_STATUSES = List.of(
-            OrderStatus.PAID, OrderStatus.PREPARING
+            OrderStatus.PAID, OrderStatus.PREPARING, OrderStatus.READY
     );
 
     private final OrderRepository orderRepository;
@@ -85,7 +85,7 @@ public class KitchenOrderService {
                 item.getProductName(),
                 item.getVariantName(),
                 item.getQuantity(),
-                null
+                item.getSpecialInstructions()
         );
     }
 }

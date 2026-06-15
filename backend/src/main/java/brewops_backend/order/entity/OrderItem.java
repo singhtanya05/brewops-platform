@@ -36,4 +36,7 @@ public class OrderItem extends BaseEntity {
 
     @Column(name = "line_total", nullable = false)
     private BigDecimal lineTotal;
+
+    @Column(name = "special_instructions")
+    private String specialInstructions;
 }

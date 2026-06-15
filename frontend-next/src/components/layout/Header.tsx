@@ -59,6 +59,7 @@ export function Header() {
         {/* Cart Button */}
         <button 
           onClick={toggleCart}
+          aria-label="cart"
           className="relative p-2.5 rounded-[14px] bg-card border border-white/60 shadow-[var(--shadow-clay-button)] hover:opacity-90 active:shadow-[var(--shadow-clay-pressed)] active:scale-95 transition-all"
         >
           <ShoppingCart size={18} className="text-coffee" />

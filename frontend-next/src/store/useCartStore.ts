@@ -13,8 +13,10 @@ export interface CartItem {
 }
 
 interface CartState {
+  sessionId: string | null;
   items: CartItem[];
   isCartOpen: boolean;
+  getSessionId: () => string;
   addItem: (item: CartItem) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
@@ -28,9 +30,19 @@ interface CartState {
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
+      sessionId: null,
       items: [],
       isCartOpen: false,
       
+      getSessionId: () => {
+        let sid = get().sessionId;
+        if (!sid) {
+          sid = 'web-' + Math.random().toString(36).substring(2, 15);
+          set({ sessionId: sid });
+        }
+        return sid;
+      },
+
       addItem: (newItem) => {
         set((state) => {
           const existingItemIndex = state.items.findIndex((item) => item.id === newItem.id);
@@ -66,7 +78,7 @@ export const useCartStore = create<CartState>()(
         });
       },
       
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], sessionId: null }),
       
       toggleCart: () => set((state) => ({ isCartOpen: !state.isCartOpen })),
       setCartOpen: (isOpen) => set({ isCartOpen: isOpen }),

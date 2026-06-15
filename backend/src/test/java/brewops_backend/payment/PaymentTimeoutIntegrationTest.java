@@ -68,7 +68,7 @@ class PaymentTimeoutIntegrationTest extends AbstractIntegrationTest {
         // 1. Add item and checkout to create PENDING order (reserves stock)
         restTemplate.postForEntity(
                 "/api/v1/cart/items",
-                new AddCartItemRequest(sessionId, variantId, 1),
+                new AddCartItemRequest(sessionId, variantId, 1, null),
                 Void.class
         );
 
@@ -112,7 +112,7 @@ class PaymentTimeoutIntegrationTest extends AbstractIntegrationTest {
         // 1. Checkout
         restTemplate.postForEntity(
                 "/api/v1/cart/items",
-                new AddCartItemRequest(sessionId, variantId, 1),
+                new AddCartItemRequest(sessionId, variantId, 1, null),
                 Void.class
         );
 
