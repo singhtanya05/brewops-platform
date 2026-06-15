@@ -18,8 +18,25 @@ export default function KitchenPage() {
   const { data: orders = [] } = useQuery({
     queryKey: ['kitchenOrders'],
     queryFn: () => getKitchenOrders(),
-    refetchInterval: 3000, // Poll every 3 seconds
   });
+
+  useEffect(() => {
+    // Setup SSE connection
+    const evtSource = new EventSource('/api/v1/kitchen/stream', { withCredentials: true });
+    
+    evtSource.addEventListener('update', (event) => {
+      console.log("Kitchen SSE Update received:", event.data);
+      queryClient.invalidateQueries({ queryKey: ['kitchenOrders'] });
+    });
+
+    evtSource.onerror = (err) => {
+      console.error("SSE Error:", err);
+    };
+
+    return () => {
+      evtSource.close();
+    };
+  }, [queryClient]);
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: OrderStatus }) => updateKitchenOrderStatus(id, status),
@@ -73,7 +90,7 @@ export default function KitchenPage() {
               Drop orders here
             </div>
           ) : (
-            columnOrders.map(order => (
+            columnOrders.map((order: any) => (
               <div 
                 key={order.id}
                 draggable

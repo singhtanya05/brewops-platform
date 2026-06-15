@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useUIStore } from '@/store/useUIStore';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getOrderById } from '@/lib/api';
 
 export function OrderTrackingDrawer() {
@@ -14,12 +14,28 @@ export function OrderTrackingDrawer() {
     setMounted(true);
   }, []);
 
+  const queryClient = useQueryClient();
+
   const { data: order, isLoading } = useQuery({
     queryKey: ['order', currentOrderId],
     queryFn: () => getOrderById(currentOrderId!),
     enabled: !!currentOrderId,
-    refetchInterval: 5000, // Poll every 5s for status updates
   });
+
+  useEffect(() => {
+    if (!currentOrderId) return;
+    
+    const evtSource = new EventSource('/api/v1/kitchen/stream', { withCredentials: true });
+    
+    evtSource.addEventListener('update', (event) => {
+      console.log("Order Tracking SSE Update received:", event.data);
+      queryClient.invalidateQueries({ queryKey: ['order', currentOrderId] });
+    });
+
+    return () => {
+      evtSource.close();
+    };
+  }, [currentOrderId, queryClient]);
 
   if (!mounted) return null;
 

@@ -30,6 +30,7 @@ public class OrderLifecycleService {
     );
 
     private final OrderStatusHistoryRepository orderStatusHistoryRepository;
+    private final brewops_backend.kitchen.service.KitchenSseService kitchenSseService;
 
     public void transition(Order order, OrderStatus newStatus, String reason) {
         transition(order, newStatus, reason, null);
@@ -58,5 +59,9 @@ public class OrderLifecycleService {
         orderStatusHistoryRepository.save(history);
 
         order.setStatus(newStatus);
+
+        if (newStatus == OrderStatus.PAID || newStatus == OrderStatus.PREPARING || newStatus == OrderStatus.READY || newStatus == OrderStatus.COMPLETED) {
+            kitchenSseService.broadcastKitchenUpdate();
+        }
     }
 }

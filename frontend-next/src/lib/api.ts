@@ -4,14 +4,9 @@ const getApiBaseUrl = () => {
   return '/api/v1'; // Always use relative path, handled by Next.js proxy
 };
 
-// Custom fetch wrapper that automatically attaches the JWT token
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
-  const token = useAuthStore.getState().token;
-  
   const headers = new Headers(options.headers || {});
-  if (token) {
-    headers.set('Authorization', `Bearer ${token}`);
-  }
+  
   if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
   }
@@ -20,6 +15,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const response = await fetch(`${baseUrl}${endpoint}`, {
     ...options,
     headers,
+    credentials: 'include', // Ensure cookies are sent with requests
   });
 
   if (!response.ok) {

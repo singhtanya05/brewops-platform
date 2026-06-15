@@ -42,14 +42,10 @@ export default function LoginPage() {
       if (!resp.ok) throw new Error("Authentication failed");
       
       const responseData = await resp.json();
-      const token = responseData.token;
-
-      // Parse JWT purely on the frontend to extract roles
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const roles = payload.roles || [];
+      const roles = responseData.roles || [];
       const primaryRole: Role = roles.includes('ADMIN') ? 'ADMIN' : (roles.includes('STAFF') ? 'STAFF' : 'CUSTOMER');
 
-      login(token, primaryRole);
+      login(primaryRole);
       
       if (primaryRole === 'ADMIN') {
         router.push('/suppliers');
