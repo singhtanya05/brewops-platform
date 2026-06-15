@@ -26,5 +26,24 @@ export const logger = {
   
   error: (...args: any[]) => {
     console.error('[ERROR]', ...args);
+    
+    // Safely attempt to send to the backend, ignore errors to prevent loops
+    try {
+      const errorPayload = {
+        timestamp: new Date().toISOString(),
+        url: typeof window !== 'undefined' ? window.location.href : 'ssr',
+        messages: args.map(arg => 
+          arg instanceof Error ? { message: arg.message, stack: arg.stack } : arg
+        )
+      };
+
+      fetch('/api/v1/logs/client', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(errorPayload)
+      }).catch(() => { /* silently fail to avoid log loops */ });
+    } catch (e) {
+      // Ignore
+    }
   }
 };

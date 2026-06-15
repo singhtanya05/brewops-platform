@@ -11,6 +11,10 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     headers.set('Content-Type', 'application/json');
   }
 
+  // Generate and attach a Correlation ID for distributed tracing
+  const correlationId = crypto.randomUUID();
+  headers.set('X-Correlation-ID', correlationId);
+
   const baseUrl = getApiBaseUrl();
   const response = await fetch(`${baseUrl}${endpoint}`, {
     ...options,
