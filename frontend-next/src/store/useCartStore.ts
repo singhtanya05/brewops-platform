@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Product } from '@/lib/api';
 
 export interface CartItem {
   id: string; // unique ID for the cart item (usually combination of variantId + customizations)

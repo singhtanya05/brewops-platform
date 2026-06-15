@@ -2,11 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { useUIStore } from '@/store/useUIStore';
-import { useOrderStore } from '@/store/useOrderStore';
+import { useQuery } from '@tanstack/react-query';
+import { getOrderById } from '@/lib/api';
 
 export function OrderTrackingDrawer() {
   const { isTrackingOpen, currentOrderId, closeTracking } = useUIStore();
-  const { getOrderById } = useOrderStore();
   
   // Hydration fix
   const [mounted, setMounted] = useState(false);
@@ -14,10 +14,16 @@ export function OrderTrackingDrawer() {
     setMounted(true);
   }, []);
 
+  const { data: order, isLoading } = useQuery({
+    queryKey: ['order', currentOrderId],
+    queryFn: () => getOrderById(currentOrderId!),
+    enabled: !!currentOrderId,
+    refetchInterval: 5000, // Poll every 5s for status updates
+  });
+
   if (!mounted) return null;
 
-  const order = currentOrderId ? getOrderById(currentOrderId) : null;
-  const status = order?.status || 'paid';
+  const status = order?.status?.toLowerCase() || 'paid';
 
   const isBrewing = status === 'brewing' || status === 'ready' || status === 'completed';
   const isReady = status === 'ready' || status === 'completed';
@@ -49,7 +55,7 @@ export function OrderTrackingDrawer() {
 
         <div className="px-8 pb-8 flex-1 overflow-y-auto">
           <h2 className="font-outfit text-2xl font-bold text-coffee mb-6">
-            Order Tracking #{currentOrderId || '000000'}
+            Order Tracking #{order?.orderNumber || '...'}
           </h2>
 
           {status === 'completed' && (

@@ -1,11 +1,7 @@
 import { useAuthStore } from '@/store/useAuthStore';
 
 const getApiBaseUrl = () => {
-  if (typeof window !== 'undefined') {
-    // Dynamically use whatever IP or hostname the browser is currently at
-    return `http://${window.location.hostname}:8080/api/v1`;
-  }
-  return 'http://localhost:8080/api/v1'; // Fallback for SSR
+  return '/api/v1'; // Always use relative path, handled by Next.js proxy
 };
 
 // Custom fetch wrapper that automatically attaches the JWT token
@@ -65,4 +61,34 @@ export interface MenuCategory {
 export async function fetchMenu(): Promise<MenuCategory[]> {
   // We can use our secure apiFetch here
   return apiFetch('/menu');
+}
+
+export async function addCartItem(sessionId: string, variantId: string, quantity: number) {
+  return apiFetch('/cart/items', {
+    method: 'POST',
+    body: JSON.stringify({ sessionId, variantId, quantity })
+  });
+}
+
+export async function createOrder(sessionId: string) {
+  return apiFetch('/orders', {
+    method: 'POST',
+    body: JSON.stringify({ sessionId })
+  });
+}
+
+export async function getOrderById(orderId: string) {
+  return apiFetch(`/orders/${orderId}`);
+}
+
+export async function getKitchenOrders(status?: string) {
+  const url = status ? `/kitchen/orders?status=${status}` : '/kitchen/orders';
+  return apiFetch(url);
+}
+
+export async function updateKitchenOrderStatus(orderId: string, status: string) {
+  return apiFetch(`/kitchen/orders/${orderId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status })
+  });
 }

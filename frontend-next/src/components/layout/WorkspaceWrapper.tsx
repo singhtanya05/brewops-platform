@@ -33,7 +33,7 @@ export function WorkspaceWrapper({ children }: { children: React.ReactNode }) {
       {/* Main Content Area (Where the specific pages render) */}
       <main 
         className={`flex-1 overflow-y-auto bg-[#F2EFE9] relative z-0 transition-all duration-300 ease-in-out ${
-          mounted && isSidebarOpen ? 'ml-[240px]' : 'ml-0'
+          mounted && isSidebarOpen ? 'md:ml-[240px]' : 'ml-0'
         }`}
       >
         {children}

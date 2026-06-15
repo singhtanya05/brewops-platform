@@ -5,6 +5,7 @@ import { useCartStore } from '@/store/useCartStore';
 import { useUIStore } from '@/store/useUIStore';
 import { useOrderStore } from '@/store/useOrderStore';
 import { PaymentModal } from '@/components/ui/PaymentModal';
+import { addCartItem, createOrder } from '@/lib/api';
 
 export function CartDrawer() {
   const { isCartOpen, items, toggleCart, removeItem, updateQuantity, getTotalPrice, clearCart } = useCartStore();
@@ -24,23 +25,31 @@ export function CartDrawer() {
     setIsPaymentOpen(true);
   };
 
-  const handlePaymentSuccess = () => {
-    const mockOrderId = String(Math.floor(100000 + Math.random() * 900000));
-    
-    // Save to persistent order store
-    addOrder({
-      id: mockOrderId,
-      items: [...items],
-      totalAmount: getTotalPrice(),
-      status: 'paid',
-      createdAt: new Date().toISOString()
-    });
-
-    setIsPaymentOpen(false);
-    clearCart();
-    toggleCart();
-    
-    openTracking(mockOrderId);
+  const handlePaymentSuccess = async () => {
+    try {
+      // 1. Generate a temporary session ID for the backend cart
+      const sessionId = 'web-' + Math.random().toString(36).substring(2, 15);
+      
+      // 2. Add all items to the backend cart
+      for (const item of items) {
+        // Fallback to productId if variantId is missing, though our types say it should be there
+        const vId = item.variantId || item.productId;
+        await addCartItem(sessionId, vId, item.quantity);
+      }
+      
+      // 3. Convert cart to order in the backend
+      const orderResponse = await createOrder(sessionId);
+      
+      setIsPaymentOpen(false);
+      clearCart();
+      toggleCart();
+      
+      // Open tracking drawer with the REAL backend order ID
+      openTracking(orderResponse.orderId);
+    } catch (err) {
+      console.error('Checkout failed', err);
+      alert('Failed to process order. Please try again.');
+    }
   };
 
   return (

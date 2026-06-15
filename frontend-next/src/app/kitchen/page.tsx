@@ -2,19 +2,35 @@
 
 import React, { useEffect, useState } from 'react';
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { useOrderStore, OrderStatus, Order } from '@/store/useOrderStore';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getKitchenOrders, updateKitchenOrderStatus } from '@/lib/api';
+
+type OrderStatus = 'paid' | 'brewing' | 'ready' | 'completed';
 
 export default function KitchenPage() {
-  const { orders, updateOrderStatus } = useOrderStore();
+  const queryClient = useQueryClient();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  const { data: orders = [] } = useQuery({
+    queryKey: ['kitchenOrders'],
+    queryFn: () => getKitchenOrders(),
+    refetchInterval: 3000, // Poll every 3 seconds
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: OrderStatus }) => updateKitchenOrderStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['kitchenOrders'] });
+    },
+  });
+
   if (!mounted) return null;
 
-  const activeOrders = orders.filter(o => o.status !== 'completed');
+  const activeOrders = orders.filter((o: any) => o.status?.toLowerCase() !== 'completed');
 
   const handleDragStart = (e: React.DragEvent, orderId: string) => {
     e.dataTransfer.setData('orderId', orderId);
@@ -27,12 +43,16 @@ export default function KitchenPage() {
   const handleDrop = (e: React.DragEvent, newStatus: OrderStatus) => {
     const orderId = e.dataTransfer.getData('orderId');
     if (orderId) {
-      updateOrderStatus(orderId, newStatus);
+      updateStatusMutation.mutate({ id: orderId, status: newStatus.toUpperCase() as OrderStatus });
     }
   };
 
+  const updateOrderStatus = (id: string, status: OrderStatus) => {
+    updateStatusMutation.mutate({ id, status: status.toUpperCase() as OrderStatus });
+  };
+
   const renderColumn = (title: string, status: OrderStatus, bgTheme: string) => {
-    const columnOrders = activeOrders.filter(o => o.status === status).sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    const columnOrders = activeOrders.filter((o: any) => o.status?.toLowerCase() === status).sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
     return (
       <div 
@@ -61,15 +81,15 @@ export default function KitchenPage() {
                 className="bg-white rounded-2xl p-4 shadow-[var(--shadow-clay-button)] cursor-grab active:cursor-grabbing hover:-translate-y-1 transition-transform border border-[#E6E1D8]"
               >
                 <div className="flex justify-between items-start mb-2 border-b-2 border-dashed border-[#E6E1D8] pb-2">
-                  <span className="font-bold text-coffee text-lg">#{order.id}</span>
+                  <span className="font-bold text-coffee text-lg">#{order.orderNumber}</span>
                   <span className="text-xs text-text-secondary">{new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
                 
                 <ul className="text-sm font-bold text-foreground space-y-2">
-                  {order.items.map(item => (
-                    <li key={item.id} className="flex flex-col">
+                  {order.items.map((item: any, idx: number) => (
+                    <li key={idx} className="flex flex-col">
                       <div className="flex justify-between">
-                        <span>{item.quantity}x {item.name}</span>
+                        <span>{item.quantity}x {item.productName} ({item.variantName})</span>
                       </div>
                       {item.customizations && (
                         <span className="text-xs text-text-secondary ml-4 italic border-l-2 border-orange pl-2 mt-1">
@@ -84,13 +104,13 @@ export default function KitchenPage() {
                 <div className="mt-4 flex gap-2">
                   {status === 'paid' && (
                     <button 
-                      onClick={() => updateOrderStatus(order.id, 'brewing')}
+                      onClick={() => updateOrderStatus(order.id, 'preparing')}
                       className="flex-1 py-1.5 rounded-lg bg-[#EBF3F8] text-[#6A8EAD] text-xs font-bold shadow-[var(--shadow-clay-input)] hover:bg-[#D4E5F0] transition-colors"
                     >
                       Start Brewing
                     </button>
                   )}
-                  {status === 'brewing' && (
+                  {status === 'preparing' && (
                     <button 
                       onClick={() => updateOrderStatus(order.id, 'ready')}
                       className="flex-1 py-1.5 rounded-lg bg-[#F2F8F2] text-matcha text-xs font-bold shadow-[var(--shadow-clay-input)] hover:bg-[#E3EEE3] transition-colors"
@@ -129,7 +149,7 @@ export default function KitchenPage() {
 
         <div className="flex flex-col md:flex-row gap-6 flex-1 overflow-hidden">
           {renderColumn("New Orders", "paid", "bg-[#FAF8F5]")}
-          {renderColumn("Brewing", "brewing", "bg-[#EBF3F8]")}
+          {renderColumn("Brewing", "preparing", "bg-[#EBF3F8]")}
           {renderColumn("Ready for Pickup", "ready", "bg-[#F2F8F2]")}
         </div>
       </div>

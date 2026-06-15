@@ -23,9 +23,8 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  if (!mounted) return null;
-
-  if (role === 'STAFF' || role === 'ADMIN') {
+  // Only render AdminDashboard if mounted on the client AND user is STAFF/ADMIN
+  if (mounted && (role === 'STAFF' || role === 'ADMIN')) {
     return <AdminDashboard />;
   }
 
