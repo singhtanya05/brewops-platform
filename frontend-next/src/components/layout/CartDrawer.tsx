@@ -6,6 +6,7 @@ import { useUIStore } from '@/store/useUIStore';
 import { useOrderStore } from '@/store/useOrderStore';
 import { PaymentModal } from '@/components/ui/PaymentModal';
 import { addCartItem, createOrder, apiFetch } from '@/lib/api';
+import { logger } from '@/lib/logger';
 
 export function CartDrawer() {
   const { isCartOpen, items, toggleCart, removeItem, updateQuantity, getTotalPrice, clearCart, getSessionId } = useCartStore();
@@ -58,7 +59,7 @@ export function CartDrawer() {
       // Open tracking drawer with the REAL backend order ID
       openTracking(orderResponse.orderId);
     } catch (err) {
-      console.error('Checkout failed', err);
+      logger.error('Checkout failed', err);
       alert('Failed to process order. Please try again.');
     }
   };

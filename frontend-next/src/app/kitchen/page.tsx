@@ -7,6 +7,8 @@ import { getKitchenOrders, updateKitchenOrderStatus } from '@/lib/api';
 
 type OrderStatus = 'paid' | 'preparing' | 'ready' | 'completed';
 
+import { logger } from '@/lib/logger';
+
 export default function KitchenPage() {
   const queryClient = useQueryClient();
   const [mounted, setMounted] = useState(false);
@@ -25,12 +27,12 @@ export default function KitchenPage() {
     const evtSource = new EventSource('/api/v1/kitchen/stream', { withCredentials: true });
     
     evtSource.addEventListener('update', (event) => {
-      console.log("Kitchen SSE Update received:", event.data);
+      logger.info("Kitchen SSE Update received:", event.data);
       queryClient.invalidateQueries({ queryKey: ['kitchenOrders'] });
     });
 
     evtSource.onerror = (err) => {
-      console.error("SSE Error:", err);
+      logger.error("SSE Error:", err);
     };
 
     return () => {

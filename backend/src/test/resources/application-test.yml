@@ -22,3 +22,7 @@ brewops:
 logging:
   level:
     org.hibernate.SQL: warn
+    org.springframework: warn
+    org.testcontainers: warn
+    com.zaxxer.hikari: warn
+    brewops_backend: info

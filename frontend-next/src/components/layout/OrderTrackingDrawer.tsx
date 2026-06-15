@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useUIStore } from '@/store/useUIStore';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getOrderById } from '@/lib/api';
+import { logger } from '@/lib/logger';
 
 export function OrderTrackingDrawer() {
   const { isTrackingOpen, currentOrderId, closeTracking } = useUIStore();
@@ -28,7 +29,7 @@ export function OrderTrackingDrawer() {
     const evtSource = new EventSource('/api/v1/kitchen/stream', { withCredentials: true });
     
     evtSource.addEventListener('update', (event) => {
-      console.log("Order Tracking SSE Update received:", event.data);
+      logger.info("Order Tracking SSE Update received:", event.data);
       queryClient.invalidateQueries({ queryKey: ['order', currentOrderId] });
     });
 
